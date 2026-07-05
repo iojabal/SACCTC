@@ -1,0 +1,232 @@
+================================================================
+CORRECCIONES DDL APLICADAS: SQL Server -> PostgreSQL
+Proyecto: BDUDESTRO - Migracion PostgreSQL 14+
+Fecha de correccion: 2026-06-30
+================================================================
+
+ESTADO FINAL: LISTO PARA INSTALAR (revisar seccion "PENDIENTE ANTES DE
+INSTALAR EN DATOS REALES" al final antes de correr sobre los 500K+ registros)
+
+================================================================
+ORDEN DE INSTALACION RECOMENDADO
+================================================================
+1. 01_TABLAS.sql              (26 tablas, todas con PK)
+2. 02_INDICES.sql              (sin cambios en esta revision)
+3. 03_FOREIGN_KEYS.sql         (25 relaciones FK activas)
+4. 04_VIEWS.sql                (10 vistas corregidas)
+5. 05_PROCEDURES.sql           (sin cambios en esta revision)
+6. 06_VERIFICACION_RAPIDA.sql  (validar instalacion)
+
+================================================================
+1. 01_TABLAS.sql - CORRECCIONES
+================================================================
+
+1.1 PRIMARY KEYS AGREGADAS (14 tablas sin PK -> ahora con BIGSERIAL PRIMARY KEY)
+----------------------------------------------------------------
+Se agrego una columna "id BIGSERIAL PRIMARY KEY" como primera columna en:
+  - RenovacionSolicitudes0
+  - Bitacora
+  - ControlCatoBitacora
+  - ObservadosBi
+  - Tecnicos
+  - TecnicosObs
+  - TramHojaDeRutaRenovFormDir
+  - TramSeguimiento
+  - Usuarios
+  - TmpListaCatosObs
+  - TmpObsAux
+  - TramCite
+  - TramHojaDeRutaRenovSolic
+  - TablaAfiliadosAux
+
+ANTES:
+  CREATE TABLE IF NOT EXISTS Usuarios (
+      id_usr INTEGER NOT NULL,
+      nombre_apellido varchar NOT NULL,
+      ...
+
+DESPUES:
+  CREATE TABLE IF NOT EXISTS Usuarios (
+      id BIGSERIAL PRIMARY KEY,
+      id_usr INTEGER NOT NULL,
+      nombre_apellido varchar NOT NULL,
+      ...
+
+Resultado: las 26 tablas del script tienen ahora PRIMARY KEY (verificado
+por columna).
+
+1.2 TIPOS DE DATOS CORREGIDOS
+----------------------------------------------------------------
+Tabla TablaAfiliadosAux:
+  ANTES: id_fed DOUBLE PRECISION   ->  DESPUES: id_fed BIGINT
+  ANTES: id_cent DOUBLE PRECISION  ->  DESPUES: id_cent BIGINT
+  ANTES: id_sind DOUBLE PRECISION  ->  DESPUES: id_sind BIGINT
+  ANTES: id_cato DOUBLE PRECISION  ->  DESPUES: id_cato BIGINT
+
+Tabla ControlCatoBitacora:
+  ANTES: sup_mensura DOUBLE PRECISION  ->  DESPUES: sup_mensura DECIMAL(8,4)
+
+NOTA: se dejaron sin tocar "mensura" (TablaAfiliadosAux) y "MEN"
+(TmpListaCatosObs), ambas DOUBLE PRECISION, porque no estaban en el listado
+de columnas a corregir y son campos de medida (superficie), no
+identificadores.
+
+1.3 CORRECCION ADICIONAL CRITICA NO LISTADA ORIGINALMENTE (bloqueaba FKs)
+----------------------------------------------------------------
+Se detecto que Afiliados.id_afi y Cato.id_cato son referenciados por
+multiples FOREIGN KEY en 03_FOREIGN_KEYS.sql, pero solo tenian la columna
+"id BIGSERIAL PRIMARY KEY" como clave -- PostgreSQL exige que la columna
+referenciada sea PK o UNIQUE, por lo que sin esta correccion TODAS las
+FKs hacia estas dos tablas hubieran fallado al ejecutar el script.
+
+ANTES:
+  id_afi varchar NOT NULL,          (tabla Afiliados)
+  id_cato BIGINT NOT NULL,          (tabla Cato)
+
+DESPUES:
+  id_afi varchar NOT NULL UNIQUE,   (tabla Afiliados)
+  id_cato BIGINT NOT NULL UNIQUE,   (tabla Cato)
+
+================================================================
+2. 03_FOREIGN_KEYS.sql - CORRECCIONES
+================================================================
+
+2.1 FOREIGN KEYS ACTIVADAS (9 FKs estaban comentadas, ahora las 25 estan
+activas; 0 comentadas restantes)
+----------------------------------------------------------------
+Activadas segun lo solicitado (criticas):
+  - ControlCato -> RenovacionProgramada0        (fk_controlcato_renov)
+  - RenovacionProgramada0 -> Cato                (fk_renov_cato)
+  - RenovacionProgramada0 -> Afiliados           (fk_renov_afiliados)
+  - RenovacionProgramada0 -> RenovacionSolicitudes0 (fk_renov_solicitudes)
+
+Activadas adicionalmente (estaban comentadas en el archivo original y se
+revisaron para no dejar integridad referencial incompleta):
+  - TecnicosObs -> Tecnicos                      (fk_tecnicosobs_tecnicos)
+  - TramHojaDeRuta -> Cato                       (fk_tramhojaderuta_cato)
+  - TramHojaDeRutaRenov -> Cato                  (fk_tramhojaderutarenov_cato2)
+  - TramHojaDeRutaRenovSolic -> Cato             (fk_tramhojaderutarenovsolic_cato)
+  - TramHojaDeRutaRenovSolic -> TramHojaDeRutaRenovFormDir (fk_tramhojaderutarenovsolic_formdir)
+
+ANTES (ejemplo):
+  -- ALTER TABLE RenovacionProgramada0
+  --   ADD CONSTRAINT fk_renov_cato
+  --   FOREIGN KEY (id_cato) REFERENCES Cato(id_cato)
+  --   ON DELETE SET NULL;
+
+DESPUES:
+  ALTER TABLE RenovacionProgramada0
+    ADD CONSTRAINT fk_renov_cato
+    FOREIGN KEY (id_cato) REFERENCES Cato(id_cato)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE;
+
+2.2 RESTRICCIONES UNIQUE AGREGADAS (requisito de PostgreSQL para FKs)
+----------------------------------------------------------------
+Para poder activar las FKs anteriores, se agregaron 3 UNIQUE adicionales
+en 03_FOREIGN_KEYS.sql (ademas de las 2 agregadas directamente en las
+columnas de 01_TABLAS.sql):
+  - RenovacionSolicitudes0.nro_solicitud  UNIQUE (uq_renovacionsolicitudes0_nro_solicitud)
+  - Tecnicos.tec_id                       UNIQUE (uq_tecnicos_tec_id)
+  - TramHojaDeRutaRenovFormDir.id_form    UNIQUE (uq_tramhojaderutarenovformdir_id_form)
+
+================================================================
+3. 04_VIEWS.sql - CORRECCIONES
+================================================================
+
+3.1 VISTA VistaTitular RECONSTRUIDA (estaba corrupta / incompleta)
+----------------------------------------------------------------
+ANTES (SELECT incompleto, sin FROM, terminaba abruptamente en "c.codi;"):
+  CREATE OR REPLACE VIEW VistaTitular AS
+  SELECT        c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular, a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codi;
+
+DESPUES (reconstruida a partir del DDL original de SQL Server,
+00_DDLORIGINAL_SQLSERVER.sql lineas 436-440):
+  CREATE OR REPLACE VIEW VistaTitular AS
+  SELECT        c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular, a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codigo_docu, c.obs, a.ext, c.resol_nro, c.resol_fecha
+  FROM         Cambio AS c INNER JOIN
+                        Afiliados AS a ON c.id_afi_titular = a.id_afi
+  ;
+
+Se agrego comentario SQL en el archivo documentando la fuente de la
+reconstruccion, tal como se solicito para casos dudosos.
+
+3.2 ESPACIADO EN SELECT CORREGIDO (4 vistas afectadas)
+----------------------------------------------------------------
+  VistaControlCato:      SELECTid_cato   -> SELECT id_cato
+  VistaControlCatoAux:   SELECTc.id_cato -> SELECT c.id_cato
+  VistaListaCatosTemp:   SELECTC.id_cato -> SELECT C.id_cato
+  VistaListaCatosTemp2:  SELECTC.id_cato -> SELECT C.id_cato
+
+3.3 ISNULL() -> COALESCE() (2 vistas afectadas: VistaListaCatosTemp,
+VistaListaCatosTemp2)
+----------------------------------------------------------------
+ANTES:
+  ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE
+
+DESPUES:
+  COALESCE(A.apellido1, '') || ' ' || COALESCE(A.apellido2, '') || ' ' || COALESCE(A.nombres, '') AS NOMBRE
+
+3.4 CONCATENACION '+' -> '||' (mismo par de vistas, incluye tambien
+concatenacion de A.id_afi con literal)
+----------------------------------------------------------------
+ANTES:
+  A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI
+
+DESPUES:
+  A.id_afi || ' - ' || COALESCE(A.ext, '') AS CI
+
+3.5 REFERENCIAS dbo. REMOVIDAS (todas las vistas, 10/10)
+----------------------------------------------------------------
+ANTES:
+  FROM dbo.ControlCato AS c
+
+DESPUES:
+  FROM ControlCato AS c
+
+Se removieron todas las referencias "dbo." en FROM, INNER JOIN, LEFT
+OUTER JOIN y en columnas calificadas (ej. dbo.Federaciones.id_fed ->
+Federaciones.id_fed) en las 10 vistas.
+
+================================================================
+4. VALIDACIONES EJECUTADAS DESPUES DE CADA CORRECCION
+================================================================
+  [OK] grep "dbo\." en los 3 archivos -> 0 coincidencias de SQL real
+       (solo queda un comentario explicativo en VistaTitular que cita
+       el DDL original de SQL Server)
+  [OK] grep "ISNULL(" -> 0 coincidencias
+  [OK] grep "SELECT[A-Za-z]" (sin espacio) -> 0 coincidencias
+  [OK] grep patrones de concatenacion con "+" -> 0 coincidencias
+  [OK] Las 26 tablas de 01_TABLAS.sql tienen PRIMARY KEY (verificado
+       tabla por tabla con script awk)
+  [OK] 03_FOREIGN_KEYS.sql: 25 FOREIGN KEY activas, 0 comentadas
+  [OK] 04_VIEWS.sql: 10 vistas, todas con FROM valido y balanceado
+  [OK] Tipos de datos de TablaAfiliadosAux y ControlCatoBitacora
+       corregidos segun especificacion
+
+================================================================
+5. PENDIENTE ANTES DE INSTALAR EN DATOS REALES (500K+ registros)
+================================================================
+  1. Verificar que no existan valores huerfanos (orphan values) en las
+     columnas usadas como FK antes de correr 03_FOREIGN_KEYS.sql, en
+     especial:
+       - RenovacionProgramada0.nro_solicitud vs RenovacionSolicitudes0.nro_solicitud
+       - Cambio.id_afi_titular / id_afi_nuevo vs Afiliados.id_afi
+       - Todas las columnas id_cato vs Cato.id_cato
+     Si existen huerfanos, el ALTER TABLE ... ADD CONSTRAINT fallara.
+     Sugerencia: correr SELECT antes de aplicar FKs para detectar filas
+     huerfanas, o cargar los datos en orden padre->hijo.
+  2. Confirmar que Afiliados.id_afi y Cato.id_cato no tengan duplicados
+     en los datos de origen antes de aplicar los nuevos UNIQUE
+     constraints (fallara la migracion si hay duplicados).
+  3. Ejecutar 06_VERIFICACION_RAPIDA.sql despues de instalar
+     01_TABLAS.sql, 03_FOREIGN_KEYS.sql y 04_VIEWS.sql para confirmar
+     26 tablas, 10 vistas, PKs y tipos de datos.
+  4. Revisar 05_PROCEDURES.sql por separado (fuera del alcance de esta
+     correccion) -- contiene funciones/procedimientos que tambien deben
+     revisarse por ISNULL(), concatenacion "+", y referencias dbo.
+
+================================================================
+ESTADO FINAL: LISTO PARA INSTALAR (sujeto a validacion de datos huerfanos
+y duplicados descrita en la seccion 5 antes de correr sobre produccion)
+================================================================

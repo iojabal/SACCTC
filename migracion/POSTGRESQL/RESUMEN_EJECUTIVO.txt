@@ -1,0 +1,79 @@
+================================================================================
+RESUMEN EJECUTIVO - REVISIÓN DDL
+================================================================================
+
+VEREDICTO: NO LISTO - Bloqueadores críticos detectados
+
+================================================================================
+BLOQUEADORES CRÍTICOS (Impiden ejecución):
+================================================================================
+
+1. VistaTitular INCOMPLETA/CORRUPTA (04_VIEWS.sql:113)
+   - Falta FROM clause
+   - Termina abruptamente
+   → SOLUCIÓN: Reescribir vista
+
+2. ERRORES DE SINTAXIS EN VISTAS (4 vistas)
+   - SELECTid_cato → falta espacio
+   - SELECTc.xxx → falta espacio
+   - Líneas 18, 28, 62, 89
+   → SOLUCIÓN: Agregar espacio (SELECT)
+
+3. FUNCIONES SQL SERVER NO CONVERTIDAS
+   - ISNULL(x, y) → debe ser COALESCE(x, y)
+   - '+' concatenación → debe ser '||'
+   - Múltiples ocurrencias en vistas
+   → SOLUCIÓN: Find & Replace global
+
+4. REFERENCIAS [dbo] SCHEMA
+   - PostgreSQL no tiene schema [dbo]
+   - Usar: ControlCato en vez de dbo.ControlCato
+   - Todas las vistas afectadas
+   → SOLUCIÓN: Remover dbo. de todas las vistas
+
+================================================================================
+MAYORES (Revisar antes de producción):
+================================================================================
+
+1. 14 TABLAS SIN PRIMARY KEY CORRECTA
+   - RenovacionSolicitudes0, Bitacora, ControlCatoBitacora, etc.
+   - Requieren ALTER TABLE con PK definitions
+   → ACCIÓN: Crear script 02b_PRIMARY_KEYS.sql
+
+2. 10 FOREIGN KEYS DESACTIVADAS
+   - Críticas: id_cato, id_afi, nro_solicitud en RenovacionProgramada0
+   - Razón: Valores NULL en datos
+   → ACCIÓN: Validar CSVs antes de activar
+
+3. TIPOS DE DATOS INCONSISTENTES
+   - TablaAfiliadosAux: DOUBLE PRECISION para IDs (debería BIGINT)
+   - ControlCatoBitacora: DOUBLE PRECISION vs DECIMAL
+   → ACCIÓN: Corregir antes de importar datos
+
+================================================================================
+TIMELINE DE CORRECCIONES:
+================================================================================
+
+Crítica (Hoy):        1-2 horas  - Sintaxis en vistas
+Alta (Antes datos):   2-3 horas  - PKs y tipos de datos
+Media (Antes prod):   1-2 horas  - FKs, validación
+
+TOTAL: 7-11 horas
+
+================================================================================
+RECOMENDACIÓN:
+================================================================================
+
+DETENER migración de datos.
+Corregir bloqueadores antes de continuar.
+
+NO ejecutar scripts sin correcciones → Riesgo de pérdida de datos.
+
+================================================================================
+Próximos pasos:
+1. Revisar REVISION_CRITICA_FINAL.txt (detalle completo)
+2. Crear correcciones en nuevo branch
+3. Validar CSVs antes de importar
+4. Testing en environment no-producción primero
+
+================================================================================

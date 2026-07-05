@@ -1,0 +1,229 @@
+﻿================================================================================
+CONVERSION SUMMARY REPORT - SQL Server to PostgreSQL 14+
+================================================================================
+Generated: 2026-06-30 23:13:08
+Source: SQL Server BDUDESTRO Database
+Target: PostgreSQL 14+
+Source File: C:\Users\M S I\Documents\UDESTRO\migracion\POSTGRESQL\temp_converted.sql
+
+================================================================================
+CONVERSION STATISTICS
+================================================================================
+Total Tables Converted:     26
+Total Views Converted:      10
+Total Foreign Keys Mapped:  0
+
+================================================================================
+TABLES CONVERTED
+================================================================================  [Afiliados]
+  [Bitacora]
+  [Cambio]
+  [Cato]
+  [Centrales]
+  [ControlCato]
+  [ControlCatoBitacora]
+  [Federaciones]
+  [Observados]
+  [ObservadosBi]
+  [RenovacionProgramada0]
+  [RenovacionSolicitudes0]
+  [Sindicatos]
+  [TablaAfiliadosAux]
+  [Tecnicos]
+  [TecnicosObs]
+  [TmpListaCatosObs]
+  [TmpObsAux]
+  [TramCite]
+  [TramHojaDeRuta]
+  [TramHojaDeRutaRenov]
+  [TramHojaDeRutaRenovFormDir]
+  [TramHojaDeRutaRenovSolic]
+  [TramSeguimiento]
+  [Traslados]
+  [Usuarios]
+
+================================================================================
+VIEWS CONVERTED
+================================================================================  [VistaControlCato]
+  [VistaControlCatoAux]
+  [VistaEntrante]
+  [VistaListaCatosObsTemp]
+  [VistaListaCatosTemp]
+  [VistaListaCatosTemp2]
+  [VistaOrganizacion]
+  [VistaRenovNoDestruidas]
+  [VistaRenovNoDestruidas2]
+  [VistaTitular]
+
+================================================================================
+CONVERSIÃ“N DE TIPOS DE DATOS
+================================================================================
+SQL Server Type          PostgreSQL Type                   Notas
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+BIGINT IDENTITY(1,1)     BIGSERIAL PRIMARY KEY              Auto-incremento
+BIGINT                   BIGINT                             8-byte integer
+INT                      INTEGER                            4-byte integer
+SMALLINT                 SMALLINT                           2-byte integer
+TINYINT                  SMALLINT                           Sin TINYINT en PG
+VARCHAR(N)               VARCHAR(N)                         Longitud mÃ¡xima
+VARCHAR(MAX)             TEXT                               Longitud ilimitada
+NVARCHAR(N)              VARCHAR(N)                         Unicode
+NVARCHAR(MAX)            TEXT                               Unicode ilimitado
+NCHAR(N)                 CHAR(N)                            Unicode fijo
+CHAR(N)                  CHAR(N)                            Longitud fija
+TEXT                     TEXT                               Tipo texto
+IMAGE                    BYTEA                              Datos binarios
+GEOMETRY                 GEOMETRY                           Requiere PostGIS
+DATE                     DATE                               Fecha (sin hora)
+DATETIME                 TIMESTAMP                          Fecha + hora
+DATETIME2                TIMESTAMP                          Fecha + hora
+DECIMAL(p,s)             DECIMAL(p,s)                       PrecisiÃ³n exacta
+NUMERIC(p,s)             NUMERIC(p,s)                       PrecisiÃ³n exacta
+FLOAT                    DOUBLE PRECISION                   Punto flotante
+REAL                     REAL                               Punto flotante
+BIT                      BOOLEAN                            Verdadero/Falso
+
+================================================================================
+CHECKLIST DE CONVERSIÃ“N
+================================================================================
+[X] Tablas base (CREATE TABLE)
+[X] Vistas (CREATE VIEW)
+[X] Mapping de relaciones FK
+[ ] Ãndices secundarios (TODO: extraer del DDL)
+[ ] Procedimientos almacenados (TODO: conversiÃ³n manual)
+[ ] Triggers (TODO: conversiÃ³n manual)
+[ ] Funciones (TODO: conversiÃ³n manual)
+[ ] Constraints CHECK (TODO: revisar y adaptar)
+[ ] Defaults (TODO: revisar y adaptar)
+[ ] Permisos GRANT/REVOKE (TODO: definir segÃºn ambiente)
+
+================================================================================
+ARCHIVOS GENERADOS
+================================================================================
+1. 01_TABLAS.sql
+   - Contiene: 26 tablas convertidas
+   - AcciÃ³n: Ejecutar PRIMERO para crear la estructura
+   - Validar: Revisar tipos de datos y restricciones
+
+2. 02_INDICES.sql
+   - Contiene: Template de Ã­ndices con ejemplos
+   - AcciÃ³n: Descargar Ã­ndices del DDL original y aÃ±adir aquÃ­
+   - Validar: Asegurar que tenga impacto positivo en performance
+
+3. 03_FOREIGN_KEYS.sql
+   - Contiene: Relaciones FK parcialmente comentadas
+   - AcciÃ³n: Ejecutar DESPUÃ‰S de crear todas las tablas
+   - Validar: Verificar orden de creaciÃ³n y valores NULL
+
+4. 04_VIEWS.sql
+   - Contiene: 10 vistas convertidas
+   - AcciÃ³n: Ejecutar DESPUÃ‰S de crear las tablas base
+   - Validar: Probar que las vistas funcionan correctamente
+
+5. 05_PROCEDURES.sql
+   - Contiene: Template para procedimientos/funciones
+   - AcciÃ³n: ConversiÃ³n manual de T-SQL a PL/pgSQL
+   - Validar: Pruebas exhaustivas de lÃ³gica de negocio
+
+================================================================================
+PASOS SIGUIENTES RECOMENDADOS
+================================================================================
+1. PREPARACIÃ“N:
+   - Crear base de datos vacÃ­a en PostgreSQL 14+
+   - Verificar extensiones disponibles (PostGIS si es necesario)
+
+2. EJECUCIÃ“N EN ORDEN:
+   a) psql -U usuario -d database -f 01_TABLAS.sql
+   b) psql -U usuario -d database -f 02_INDICES.sql (opcional)
+   c) psql -U usuario -d database -f 03_FOREIGN_KEYS.sql
+   d) psql -U usuario -d database -f 04_VIEWS.sql
+   e) psql -U usuario -d database -f 05_PROCEDURES.sql (despuÃ©s de conversiÃ³n manual)
+
+3. VALIDACIÃ“N:
+   - Verificar que todas las tablas se crearon: \dt
+   - Verificar que todas las vistas se crearon: \dv
+   - Probar integridad referencial con datos
+   - Validar constraints CHECK y defaults
+   - Verificar permisos y seguridad
+
+4. MIGRACIÃ“N DE DATOS:
+   - Usar pg_dump/pg_restore o herramientas ETL
+   - Validar conteos y datos crÃ­ticos
+   - Probar aplicaciÃ³n en ambiente de prueba
+
+5. PROCEDIMIENTOS ALMACENADOS:
+   - Revisar cada procedimiento original en SQL Server
+   - Convertir T-SQL a PL/pgSQL manualmente
+   - Probar con datos de prueba
+   - Crear stubs mientras se completa conversiÃ³n
+
+================================================================================
+CONSIDERACIONES IMPORTANTES
+================================================================================
+
+1. GEOMETRY (Datos Espaciales):
+   - Las columnas con tipo GEOMETRY requieren PostGIS
+   - Instalar: CREATE EXTENSION postgis;
+   - Verificar funciones disponibles segÃºn PostGIS version
+
+2. VALORES NULL EN FK:
+   - Algunas FK estÃ¡n comentadas porque podrÃ­an tener valores NULL
+   - Revisar integridad de datos antes de habilitar
+   - Considerar llenar valores NULL con default o limpiar
+
+3. AUTOINCREMENT / SEQUENCE:
+   - BIGSERIAL crea automÃ¡ticamente una SEQUENCE
+   - Verificar que los valores IDENTITY de SQL Server no causen conflictos
+
+4. PERFORMANCE:
+   - Considerar aÃ±adir Ã­ndices en columnas de bÃºsqueda frecuente
+   - Analizar estadÃ­sticas despuÃ©s de carga de datos: ANALYZE;
+   - Considerar PARTITIONING para tablas muy grandes
+
+5. TRIGGERS Y AUDITORÃA:
+   - Las tablas de bitÃ¡cora (Bitacora, ControlCatoBitacora, ObservadosBi)
+   - PodrÃ­an beneficiarse de triggers para auditorÃ­a automÃ¡tica
+   - Revisar si existen triggers en SQL Server original
+
+================================================================================
+PROBLEMAS POTENCIALES Y SOLUCIONES
+================================================================================
+
+1. Error: "relation X already exists"
+   SoluciÃ³n: Usar IF NOT EXISTS en CREATE TABLE (ya incluido)
+
+2. Error: "foreign key constraint fails"
+   SoluciÃ³n:
+   - Verificar que exista la tabla referenciada
+   - Verificar que exista la columna referenciada
+   - Verificar que los datos sean compatibles
+
+3. Columnas con NULL en FK:
+   SoluciÃ³n:
+   - Usar ON DELETE SET NULL
+   - O limpiar los NULL antes de crear la FK
+   - O dejar FK comentada temporalmente
+
+4. Diferencias en tipos de datos:
+   SoluciÃ³n:
+   - Revisar casting explÃ­cito: CAST(columna AS TIPO)
+   - Actualizar datos si es necesario
+
+5. Funciones T-SQL sin equivalente:
+   SoluciÃ³n:
+   - Buscar funciÃ³n equivalente en PostgreSQL
+   - O implementar funciÃ³n custom en PL/pgSQL
+   - Documentar cambios en comentarios
+
+================================================================================
+RECURSOS ÃšTILES
+================================================================================
+- PostgreSQL Documentation: https://www.postgresql.org/docs/14/
+- PostGIS Documentation: https://postgis.net/docs/
+- PL/pgSQL Guide: https://www.postgresql.org/docs/14/plpgsql.html
+- SQL Migration Best Practices: https://www.postgresql.org/docs/current/sql-syntax.html
+- T-SQL to PostgreSQL: https://wiki.postgresql.org/wiki/SQL_PL
+
+================================================================================
+FIN DEL REPORTE
+================================================================================

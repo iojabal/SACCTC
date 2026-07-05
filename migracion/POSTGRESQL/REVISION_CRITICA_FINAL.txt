@@ -1,0 +1,528 @@
+================================================================================
+REVISIÓN CRÍTICA: Conversión DDL SQL Server 2017 → PostgreSQL 14+
+Fecha: 2026-06-30
+Base de datos: BDUDESTRO (69,978 afiliados, 262,573 control_cato records)
+================================================================================
+
+VEREDICTO FINAL: NO LISTO PARA PRODUCCIÓN - BLOQUEADORES CRÍTICOS ENCONTRADOS
+
+================================================================================
+CRÍTICO (Bloqueadores - Impiden ejecución):
+================================================================================
+
+1. ERROR SINTÁCTICO EN VISTA VistaTitular (línea 113 de 04_VIEWS.sql)
+   ────────────────────────────────────────────────────────────────────────
+   ACTUAL:
+   CREATE OR REPLACE VIEW VistaTitular AS
+   SELECT c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular, a.apellido1,
+          a.apellido2, a.nombres, c.tipo_cambio, c.codi;
+
+   PROBLEMA:
+   - Falta cláusula FROM completamente
+   - Sentencia incompleta/corrupta (termina con "c.codi" sin cerrar)
+   - PostgreSQL rechazará: "ERROR: syntax error at end of input"
+
+   IMPACTO: Archivo 04_VIEWS.sql fallará en su totalidad al ejecutarse
+
+   SOLUCIÓN:
+   Necesita reconstrucción completa de la vista. Probablemente debería ser:
+   CREATE OR REPLACE VIEW VistaTitular AS
+   SELECT c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular,
+          a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codigo_docu
+   FROM Cambio AS c
+   LEFT JOIN Afiliados AS a ON c.id_afi_titular = a.id_afi;
+
+
+2. ERRORES DE ESPACIADO EN KEYWORDS (4 vistas, líneas 18, 28, 62, 89)
+   ────────────────────────────────────────────────────────────────────────
+   LÍNEA 18 - VistaControlCato:
+   ACTUAL:   SELECTid_cato, MAX(fecha_control) AS Fecha_Control
+   PROBLEMA: "SELECTid_cato" - sin espacio, PostgreSQL parsea como identificador único
+   ERROR:    "ERROR: syntax error at or near 'id_cato'"
+   CORRECTO: SELECT id_cato, MAX(fecha_control) AS Fecha_Control
+
+   LÍNEA 28 - VistaControlCatoAux:
+   ACTUAL:   SELECTc.id_cato, v.Fecha_Control
+   CORRECTO: SELECT c.id_cato, v.Fecha_Control
+
+   LÍNEA 62 - VistaListaCatosTemp:
+   ACTUAL:   SELECTC.id_cato, V.id_fed
+   CORRECTO: SELECT C.id_cato, V.id_fed
+
+   LÍNEA 89 - VistaListaCatosTemp2:
+   ACTUAL:   SELECTC.id_cato, V.id_fed
+   CORRECTO: SELECT C.id_cato, V.id_fed
+
+   IMPACTO: Las 4 vistas fallarán al crearse
+
+
+3. FUNCIONES SQL SERVER SIN CONVERTIR EN VISTAS (Múltiples líneas)
+   ────────────────────────────────────────────────────────────────────────
+
+   a) ISNULL() - FUNCIÓN SQL SERVER, NO EXISTE EN PostgreSQL
+      Ubicaciones: Líneas 62, 63, 89, 90 (varias ocurrencias)
+
+      EJEMPLOS:
+      LÍNEA 62: ISNULL(A.apellido1, '')
+      LÍNEA 62: ISNULL(A.apellido2, '')
+      LÍNEA 63: ISNULL(A.ext, '')
+
+      ERROR EN PostgreSQL: "ERROR: function isnull() does not exist"
+      SOLUCIÓN: Reemplazar ISNULL(x, y) por COALESCE(x, y)
+
+   b) CONCATENACIÓN CON + (SQL Server specific)
+      Ubicaciones: Líneas 62-63, 89-90
+
+      EJEMPLOS:
+      LÍNEA 62-63: ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '')
+      LÍNEA 63: A.id_afi + ' - ' + ISNULL(A.ext, '')
+
+      ERROR EN PostgreSQL: "ERROR: operator does not exist: character varying + character varying"
+      SOLUCIÓN: Reemplazar todos los + por ||
+
+      REESCRITURA COMPLETA LÍNEA 62-63:
+      ACTUAL:
+      ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE,
+      A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI
+
+      CORRECTO:
+      COALESCE(A.apellido1, '') || ' ' || COALESCE(A.apellido2, '') || ' ' || COALESCE(A.nombres, '') AS NOMBRE,
+      A.id_afi || ' - ' || COALESCE(A.ext, '') AS CI
+
+
+4. REFERENCIAS A [dbo]. SCHEMA (Todas las vistas, múltiples líneas)
+   ────────────────────────────────────────────────────────────────────────
+   Líneas afectadas: 19, 29, 39, 51, 65, 68, 78, 92, 105, 120
+
+   EJEMPLOS:
+   LÍNEA 19: FROM dbo.ControlCato AS c
+   LÍNEA 29: FROM dbo.ControlCato AS c INNER JOIN dbo.VistaControlCato
+   LÍNEA 39: FROM dbo.RenovacionProgramada0 AS r INNER JOIN dbo.RenovacionSolicitudes0
+
+   PROBLEMA: [dbo] es schema de SQL Server. En PostgreSQL no existe por defecto.
+
+   ERROR RESULTANTE: "ERROR: schema 'dbo' does not exist" o tablas no encontradas
+
+   SOLUCIÓN: Remover TODOS los "dbo." de todas las vistas
+   - dbo.ControlCato → ControlCato
+   - dbo.RenovacionProgramada0 → RenovacionProgramada0
+   - dbo.Afiliados → Afiliados
+   Etc.
+
+
+================================================================================
+MAYOR (Revisar antes de producción):
+================================================================================
+
+1. TABLAS SIN PRIMARY KEY O SERIAL CORRECTOS (14 tablas)
+   ────────────────────────────────────────────────────────────────────────
+   Las siguientes tablas tienen problemas críticos de estructura:
+
+   a) RenovacionSolicitudes0
+      - nro_solicitud VARCHAR NOT NULL
+      - SIN PRIMARY KEY DEFINIDA
+      - Debería: ALTER TABLE RenovacionSolicitudes0 ADD PRIMARY KEY (nro_solicitud);
+      - IMPACTO: No puede usarse como clave foránea; cargas de CSV pueden permitir duplicados
+
+   b) Bitacora
+      - id INTEGER (no SERIAL)
+      - SIN PRIMARY KEY
+      - Debería: id SERIAL PRIMARY KEY o id BIGSERIAL PRIMARY KEY
+      - IMPACTO: Tabla de auditoría permitirá registros duplicados
+
+   c) ControlCatoBitacora
+      - id_cont INTEGER (no SERIAL)
+      - SIN PRIMARY KEY
+      - Debería: id_cont SERIAL PRIMARY KEY o BIGSERIAL PRIMARY KEY
+      - IMPACTO: Duplicación de registros de auditoría
+
+   d) ObservadosBi
+      - id_obs BIGINT NOT NULL (no BIGSERIAL)
+      - SIN PRIMARY KEY
+      - Debería: id_obs BIGSERIAL PRIMARY KEY
+      - IMPACTO: Permite NULL e inserciones duplicadas
+
+   e) TablaAfiliadosAux
+      - SIN NINGUNA PRIMARY KEY
+      - Es tabla auxiliar pero requiere clave para integridad
+      - IMPACTO: Potencial para datos inconsistentes
+
+   f) Tecnicos
+      - tec_id VARCHAR NOT NULL
+      - SIN PRIMARY KEY
+      - SIN UNIQUE CONSTRAINT
+      - Debería: ALTER TABLE Tecnicos ADD PRIMARY KEY (tec_id);
+      - IMPACTO: Posible duplicación de registros de técnicos
+
+   g) TecnicosObs
+      - obs_id INTEGER (no SERIAL)
+      - SIN PRIMARY KEY
+      - Debería: obs_id SERIAL PRIMARY KEY o BIGSERIAL PRIMARY KEY
+      - IMPACTO: Registros duplicados
+
+   h) TmpListaCatosObs
+      - SIN PRIMARY KEY
+      - Tabla temporal pero requiere clave
+      - IMPACTO: Datos inconsistentes en reportes
+
+   i) TmpObsAux
+      - SIN PRIMARY KEY
+      - IMPACTO: Datos inconsistentes
+
+   j) TramCite
+      - CITE, HRUTA, FECHA_CITE, TIPO_INFORME, ID_USR definidas NOT NULL
+      - SIN PRIMARY KEY (debería ser composite: cite + hruta + fecha_cite)
+      - IMPACTO: Sin validación de duplicados
+
+   k) TramHojaDeRutaRenovFormDir
+      - id_form INTEGER NOT NULL
+      - SIN BIGSERIAL (debería serlo)
+      - SIN PRIMARY KEY
+      - IMPACTO: Inserciones duplicadas
+
+   l) TramHojaDeRutaRenovSolic
+      - SIN PRIMARY KEY
+      - Tiene FKs que la referencian (comentadas) - necesita clave
+      - IMPACTO: FK comentadas no pueden ser restauradas
+
+   m) TramSeguimiento
+      - id_segui INTEGER (no SERIAL)
+      - SIN PRIMARY KEY
+      - IMPACTO: Registros de seguimiento duplicados
+
+   n) Usuarios
+      - id_usr INTEGER NOT NULL
+      - SIN BIGSERIAL
+      - SIN UNIQUE CONSTRAINT
+      - SIN PRIMARY KEY
+      - IMPACTO: Duplicación de registros de usuarios
+
+   TOTAL: 14 tablas sin estructura PK correcta
+   RECOMENDACIÓN: Revisar esquema original SQL Server para intención de cada tabla
+
+
+2. FOREIGN KEYS CRÍTICAS DESACTIVADAS (10 comentadas)
+   ────────────────────────────────────────────────────────────────────────
+   Las siguientes FKs están comentadas en 03_FOREIGN_KEYS.sql:
+
+   a) fk_controlcato_renov (línea 36-39)
+      ControlCato.id_renov → RenovacionProgramada0.id_renov
+      RAZÓN DECLARADA: "Columnas con valores NULL que impiden crear restricción"
+      RIESGO: Registros de control huérfanos sin validación
+
+   b) fk_renov_cato (línea 73-76)
+      RenovacionProgramada0.id_cato → Cato.id_cato
+      RAZÓN DECLARADA: "Columnas con valores NULL"
+      RIESGO: CRÍTICO - Datos de renovación sin cato asociado
+
+   c) fk_renov_afiliados (línea 79-82)
+      RenovacionProgramada0.id_afi → Afiliados.id_afi
+      RAZÓN DECLARADA: "Columnas con valores NULL"
+      RIESGO: CRÍTICO - Renovaciones huérfanas
+
+   d) fk_renov_solicitudes (línea 85-88)
+      RenovacionProgramada0.nro_solicitud → RenovacionSolicitudes0.nro_solicitud
+      RAZÓN DECLARADA: "Columnas con valores NULL"
+      RIESGO: CRÍTICO - Solicitudes huérfanas
+
+   e) fk_tecnicosobs_tecnicos (línea 144-147)
+      TecnicosObs.tec_id → Tecnicos.tec_id
+      RIESGO: Observaciones de técnicos sin validación
+
+   f-j) Más FKs comentadas...
+
+   IMPACTO TOTAL:
+   - Integridad referencial completamente comprometida
+   - Sin validación de datos al insertar desde CSVs
+   - Errores silenciosos: datos huérfanos aceptados
+   - Queries de integridad post-migración serán complejas y lentas
+
+   ACCIÓN REQUERIDA:
+   Revisar datos en CSVs para NULL en columnas FK antes de descomentar
+   O crear políticas de manejo de NULL (SET DEFAULT, etc.)
+
+
+3. PROBLEMAS CON TIPOS DE DATOS (Inconsistencias)
+   ────────────────────────────────────────────────────────────────────────
+
+   a) TablaAfiliadosAux (líneas 368-385) - DOUBLE PRECISION para IDs
+      ACTUAL:
+      id_fed DOUBLE PRECISION,
+      id_cent DOUBLE PRECISION,
+      id_sind DOUBLE PRECISION,
+      id_cato DOUBLE PRECISION,
+
+      PROBLEMA:
+      - DOUBLE PRECISION es punto flotante (impreciso para enteros grandes)
+      - Perderá precisión en números > 2^53
+      - Imposible hacer JOINs con BIGINT (tipo diferente)
+      - "Trabajaría" pero datos serían inexactos
+
+      CORRECTO: Deberían ser BIGINT
+      IMPACTO SEVERO: JOINs entre TablaAfiliadosAux e id_fed (BIGSERIAL) fallarán
+
+   b) ControlCatoBitacora sup_mensura - Tipo inconsistente
+      ControlCatoBitacora línea 330: sup_mensura DOUBLE PRECISION
+      ControlCato línea 41: sup_mensura decimal
+
+      PROBLEMA: Comparaciones entre tipos diferentes funcionan pero son ineficientes
+      IMPACTO: Queries lentas, posibles imprecisiones redondas
+
+
+4. ÍNDICES POTENCIALMENTE INSUFICIENTES (02_INDICES.sql)
+   ────────────────────────────────────────────────────────────────────────
+   Con volumen de datos:
+   - 69,978 afiliados
+   - 262,573 control_cato records
+   - 27,760 renovaciones
+
+   Revisar si 02_INDICES.sql tiene índices en:
+   - ControlCato.id_cato, id_afi (para JOINs)
+   - RenovacionProgramada0.id_cato, id_afi (para JOINs frecuentes)
+   - Afiliados.id_afi (columna de búsqueda)
+   - Cato.id_afi (para JOINs)
+
+
+================================================================================
+MINOR (Mejora/Convención):
+================================================================================
+
+1. VERIFICACIÓN RÁPIDA TIENE COMANDOS NO-STANDARD (06_VERIFICACION_RAPIDA.sql)
+   ────────────────────────────────────────────────────────────────────────
+
+   Línea 60:
+   WHERE indexname LIKE '%pkey'
+   PROBLEMA: PostgreSQL usa LIKE con %, pero mejor usar SIMILAR TO
+   IMPACTO: Funciona pero inconsistente con otras querys
+
+   Líneas 107-110 (Metacomandos psql):
+   \d+ Cato
+   \d+ RenovacionProgramada0
+   \d+ Afiliados
+   PROBLEMA: \d es metacomando de cliente psql, NO SQL estándar
+   IMPACTO: No funcionan en scripts SQL puro, requiere psql
+   SOLUCIÓN: Poner en sección de comentarios o usar queries SQL equivalentes
+
+
+2. VARIACIONES EN NOMENCLATURA DE VARCHAR
+   ────────────────────────────────────────────────────────────────────────
+   Algunos campos usan:
+   - varchar (sin tamaño)
+   - VARCHAR (sin tamaño)
+   - varchar(N)
+
+   RECOMENDACIÓN: Standarizar a VARCHAR(N) con tamaño explícito
+
+
+3. COMENTARIOS DE ENCODING EN HEADER
+   ────────────────────────────────────────────────────────────────────────
+   Líneas 10, 39, 42: Caracteres de encoding problemáticos (Ã en "Propósito", "tamaÃ±os")
+   IMPACTO: Menor, pero indica posible corrupción en conversión
+   SOLUCIÓN: Reconvertir con encoding UTF-8 limpio
+
+
+================================================================================
+QUÉ ESTÁ BIEN:
+================================================================================
+
+1. CONVERSIÓN DE TIPOS DE DATOS (Correctas en mayoría)
+   ✓ bigint IDENTITY(1,1) → BIGSERIAL PRIMARY KEY (donde definido)
+   ✓ varchar/nvarchar → VARCHAR (preservando tamaños)
+   ✓ nvarchar(max) → TEXT
+   ✓ text → TEXT
+   ✓ image → BYTEA
+   ✓ date → DATE
+   ✓ datetime/datetime2 → TIMESTAMP
+   ✓ decimal(p,s) → DECIMAL(p,s)
+   ✓ geometry → GEOMETRY (anotado para PostGIS)
+
+
+2. ESTRUCTURA GENERAL DE TABLAS
+   ✓ 26 tablas base identificadas
+   ✓ Constraints NOT NULL preservados (donde relevante)
+   ✓ Definición de DEFAULT values (donde existían)
+   ✓ GEOMETRY soportado para PostGIS
+
+
+3. FOREIGN KEYS ACTIVAS
+   ✓ 14 FKs bien definidas con ON DELETE/UPDATE policies apropiadas
+   ✓ Sintaxis PostgreSQL correcta para FKs activas
+   ✓ Naming conventions adecuadas
+
+
+4. VISTAS (Estructura general correcta, excepto errores específicos)
+   ✓ 10 vistas identificadas
+   ✓ Sintaxis de JOINs correcta (donde no hay errores de espaciado)
+   ✓ Alias de tabla apropiados
+
+
+================================================================================
+ACCIONES RECOMENDADAS ANTES DE FASE 1:
+================================================================================
+
+PRIORIDAD CRÍTICA (Bloquean execution):
+
+1. CORREGIR VISTA VistaTitular (04_VIEWS.sql, línea 113)
+   ACCIÓN: Reescribir sentencia SQL completa con FROM clause
+   ESFUERZO: 10 minutos
+   VERIFICAR: Contra original SQL Server si existe
+
+2. CORREGIR ESPACIADO EN 4 VISTAS (04_VIEWS.sql)
+   Líneas 18, 28, 62, 89: Agregar espacio después de SELECT
+   ESFUERZO: 5 minutos (buscar/reemplazar)
+   CAMBIOS:
+   - SELECTid_cato → SELECT id_cato
+   - SELECTc. → SELECT c.
+   - SELECTC. → SELECT C.
+
+3. CONVERTIR FUNCIONES SQL SERVER EN VISTAS (04_VIEWS.sql)
+   ACCIONES:
+   a) Reemplazar TODOS los ISNULL(x, y) con COALESCE(x, y)
+      USAR: Find & Replace global
+      FROM: ISNULL( → TO: COALESCE(
+
+   b) Reemplazar TODAS las concatenaciones + con ||
+      NOTA: Necesita cuidado para no reemplazar + en comentarios
+      FROM: ' ' + ISNULL( → TO: ' ' || COALESCE(
+      FROM: ) + ' ' + → TO: ) || ' ' ||
+      FROM: id_afi + ' - ' + → TO: id_afi || ' - ' ||
+
+   c) Remover TODOS los "dbo." de todas las vistas
+      FROM: dbo.TableName → TO: TableName
+      USAR: Find & Replace global
+
+   ESFUERZO: 30 minutos (verificación incluida)
+   CRÍTICO: Ejecutar paso a paso, verificar cada cambio
+
+
+PRIORIDAD ALTA (Antes de cargar datos):
+
+4. DEFINIR PRIMARY KEYS FALTANTES (01_TABLAS.sql)
+   ACCIONES:
+   a) Crear script 02b_PRIMARY_KEYS.sql con:
+      ALTER TABLE RenovacionSolicitudes0 ADD PRIMARY KEY (nro_solicitud);
+      ALTER TABLE Bitacora ADD CONSTRAINT pk_bitacora PRIMARY KEY (id);
+      ALTER TABLE ControlCatoBitacora ADD CONSTRAINT pk_controlcato_bi PRIMARY KEY (id_cont);
+      ALTER TABLE ObservadosBi ADD CONSTRAINT pk_observados_bi PRIMARY KEY (id_obs);
+      ALTER TABLE Usuarios ADD CONSTRAINT pk_usuarios PRIMARY KEY (id_usr);
+      Etc.
+
+   b) Revisar tipos:
+      - Cambiar TablaAfiliadosAux id_fed/id_cent/id_sind/id_cato de DOUBLE PRECISION a BIGINT
+      - Estandarizar ControlCatoBitacora.sup_mensura a DECIMAL (como ControlCato)
+
+   ESFUERZO: 45 minutos
+   VERIFICAR: Contra esquema original SQL Server
+
+
+5. ACTIVAR/AJUSTAR FOREIGN KEYS (03_FOREIGN_KEYS.sql)
+   ACCIONES:
+   a) Verificar datos en CSVs para NULL en columnas FK críticas:
+      - ControlCato.id_renov (¿todos NULL?)
+      - RenovacionProgramada0.id_cato (¿hay NULLs?)
+      - RenovacionProgramada0.id_afi (¿hay NULLs?)
+      - RenovacionProgramada0.nro_solicitud (¿hay NULLs?)
+
+   b) Si hay NULLs legítimos:
+      - Descomentar con ON DELETE SET NULL
+      - O crear tabla de valores por defecto
+
+   c) Si no hay NULLs:
+      - Descomentar FK tal cual está
+      - Ejecutar después de cargar tablas base (sin FK constraint checks primero)
+
+   d) Crear nueva tabla 03b_FOREIGN_KEYS_PENDIENTES.sql con FKs adicionales necesarias
+
+   ESFUERZO: 1-2 horas
+   CRÍTICO: Validar datos primero
+
+
+6. CREAR ÍNDICES APROPIADOS (02_INDICES.sql - verificar/extender)
+   ASEGURARSE QUE 02_INDICES.sql TIENE:
+   CREATE INDEX idx_controlcato_id_cato ON ControlCato(id_cato);
+   CREATE INDEX idx_controlcato_id_afi ON ControlCato(id_afi);
+   CREATE INDEX idx_renovprogramada_id_cato ON RenovacionProgramada0(id_cato);
+   CREATE INDEX idx_renovprogramada_id_afi ON RenovacionProgramada0(id_afi);
+   CREATE INDEX idx_afiliados_id_afi ON Afiliados(id_afi);
+   CREATE INDEX idx_cato_id_afi ON Cato(id_afi);
+   Etc.
+
+   ESFUERZO: 15-20 minutos
+   VERIFICAR: Contra accesos en vistas
+
+
+PRIORIDAD MEDIA (Antes de producción):
+
+7. CORREGIR VERIFICACIÓN RÁPIDA (06_VERIFICACION_RAPIDA.sql)
+   REEMPLAZAR: \d+ comandos con queries SQL equivalentes
+   ESFUERZO: 10 minutos
+
+8. VALIDAR DATOS DESPUÉS DE MIGRATION
+   - Ejecutar 06_VERIFICACION_RAPIDA.sql completo
+   - Verificar integridad referencial manualmente si FKs no están activas
+   - Buscar NULLs inesperados en campos críticos
+
+
+================================================================================
+ORDEN RECOMENDADO DE EJECUCIÓN FINAL:
+================================================================================
+
+1. CORRECCIONES SQL (generar scripts):
+   → 01_TABLAS.sql (CORREGIDO - agregar PK faltantes donde sea apropiado)
+   → 02_INDICES.sql (VERIFICADO y EXTENDIDO)
+   → 02b_PRIMARY_KEYS.sql (NUEVO - PK faltantes)
+   → 03_FOREIGN_KEYS.sql (VERIFICADO - comentadas apropiadamente hasta después de cargas)
+   → 03b_FOREIGN_KEYS_PENDIENTES.sql (NUEVO - si hay FKs faltantes)
+   → 04_VIEWS.sql (CORREGIDO - errores de sintaxis, ISNULL, +, dbo.)
+   → 05_PROCEDURES.sql (REVISAR - no analizado en detalle)
+   → 06_VERIFICACION_RAPIDA.sql (CORREGIDO - remover metacomandos)
+
+2. En PostgreSQL:
+   Fase 0: 01_TABLAS.sql
+   Fase 1: 02_INDICES.sql
+   Fase 2: 02b_PRIMARY_KEYS.sql (si aplica)
+   Fase 3: Cargar CSVs con datos (sin FK constraints)
+   Fase 4: 03_FOREIGN_KEYS.sql (activadas/descomentadas tras validación)
+   Fase 5: 04_VIEWS.sql (convertidas)
+   Fase 6: 05_PROCEDURES.sql (si aplica)
+   Fase 7: 06_VERIFICACION_RAPIDA.sql
+
+
+================================================================================
+VEREDICTO FINAL:
+================================================================================
+
+ESTADO: NO LISTO PARA PRODUCCIÓN
+
+RAZONES:
+1. ✗ Múltiples errores de sintaxis en vistas (SELECT sin espacio, view incompleta)
+2. ✗ Funciones SQL Server sin convertir (ISNULL, concatenación +)
+3. ✗ Referencias a [dbo] schema que no existirá en PostgreSQL
+4. ✗ 14 tablas con estructura PK problemática
+5. ✗ 10 Foreign Keys críticas desactivadas
+6. ✗ Tipos de datos inconsistentes (DOUBLE PRECISION para IDs)
+
+ESTIMACIÓN DE CORRECCIONES:
+- Correcciones críticas: 1-2 horas
+- Revisión de PKs y FKs: 2-3 horas
+- Validación de datos CSVs: 1-2 horas
+- Testing completo: 3-4 horas
+TOTAL: 7-11 horas hasta production-ready
+
+RECOMENDACIÓN:
+NO proceder a migración de datos hasta que TODOS los bloqueadores se corrijan.
+El impacto de ejecutar scripts con errores sintácticos es pérdida de datos
+y necesidad de restore/restart de migración.
+
+COSTO DE NO CORREGIR:
+- Migración fallará en fase 4 (vistas)
+- Necesitará correcciones post-facto
+- Riesgo de integridad de datos comprometida
+- Soporte operativo complejizado por datos huérfanos (FKs faltantes)
+
+================================================================================
+Revisión completada: 2026-06-30 23:45:00
+Revisor: Technical Review Audit
+Base de datos: C:\Users\M S I\Documents\UDESTRO\migracion\POSTGRESQL\
+Archivos analizados: 01_TABLAS.sql, 03_FOREIGN_KEYS.sql, 04_VIEWS.sql, 06_VERIFICACION_RAPIDA.sql
+================================================================================

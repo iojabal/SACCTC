@@ -1,0 +1,191 @@
+================================================================================
+QUICK START - Conversión DDL SQL Server a PostgreSQL
+================================================================================
+
+INICIO RÁPIDO EN 5 PASOS
+================================================================================
+
+PASO 1: Crear base de datos
+  $ psql -U postgres -c "CREATE DATABASE bdudestro ENCODING 'UTF8';"
+
+PASO 2: Instalar PostGIS (si necesita geometries)
+  $ psql -U postgres -d bdudestro -c "CREATE EXTENSION postgis;"
+
+PASO 3: Crear tablas (PRIMERO - Esta es la estructura)
+  $ psql -U postgres -d bdudestro -f 01_TABLAS.sql
+
+PASO 4: Crear relaciones y vistas
+  $ psql -U postgres -d bdudestro -f 03_FOREIGN_KEYS.sql
+  $ psql -U postgres -d bdudestro -f 04_VIEWS.sql  # Revisar primero
+
+PASO 5: Validar instalación
+  $ psql -U postgres -d bdudestro -f 06_VERIFICACION_RAPIDA.sql
+
+
+ARCHIVOS INCLUIDOS
+================================================================================
+
+Estructura (ejecutar en orden):
+  1. 01_TABLAS.sql              - 26 tablas, PRIMERO
+  2. 02_INDICES.sql             - Indices, OPCIONAL
+  3. 03_FOREIGN_KEYS.sql        - Claves foráneas, TERCERO
+  4. 04_VIEWS.sql               - Vistas, CUARTO (revisar primero)
+  5. 05_PROCEDURES.sql          - Procedures, MANUAL
+  6. 06_VERIFICACION_RAPIDA.sql - Validar, ÚLTIMO
+
+Documentación:
+  - README.md                     - Guía completa
+  - 00_INSTRUCCIONES_INSTALACION.txt - Paso a paso
+  - CONVERSION_SUMMARY.txt        - Reporte detallado
+  - QUICK_START.txt              - Este archivo
+
+
+TABLAS CONVERTIDAS (26)
+================================================================================
+
+Principales:
+  Afiliados, Cato, Federaciones, Centrales, Sindicatos
+
+Renovación:
+  RenovacionProgramada0, RenovacionSolicitudes0, ControlCato
+
+Tramitación:
+  TramHojaDeRuta, TramHojaDeRutaRenov, TramSeguimiento, TramCite
+
+Control:
+  Observados, Cambio, Traslados, Usuarios
+
+Auditoría:
+  Bitacora, ControlCatoBitacora, ObservadosBi
+
+Técnicas:
+  Tecnicos, TecnicosObs, TablaAfiliadosAux, Tmp*
+
+
+VISTAS CONVERTIDAS (10)
+================================================================================
+
+  VistaControlCato, VistaControlCatoAux
+  VistaRenovNoDestruidas, VistaRenovNoDestruidas2
+  VistaOrganizacion
+  VistaListaCatosTemp, VistaListaCatosTemp2, VistaListaCatosObsTemp
+  VistaTitular, VistaEntrante
+
+IMPORTANTE: Ver sección "AJUSTES MANUALES REQUERIDOS" abajo
+
+
+RELACIONES FK MAPEADAS (19)
+================================================================================
+
+ControlCato       → Cato, Afiliados
+Cato              → Afiliados, Sindicatos
+Centrales         → Federaciones
+Sindicatos        → Centrales
+Observados        → Cato, Afiliados
+Cambio            → Cato, Afiliados (2 relaciones)
+Traslados         → Cato, Sindicatos (2 relaciones)
+
++ Otras relaciones comentadas por precaución (valores NULL)
+
+
+AJUSTES MANUALES REQUERIDOS
+================================================================================
+
+ARCHIVO: 04_VIEWS.sql
+
+Cambio 1 - ISNULL() a COALESCE()
+  ANTES: ISNULL(A.apellido1, '')
+  DESPUES: COALESCE(A.apellido1, '')
+
+Cambio 2 - Concatenación: + a ||
+  ANTES: 'a' + 'b'
+  DESPUES: 'a' || 'b'
+
+Cambio 3 - TOP (N) PERCENT removido
+  Si necesita límite: usar LIMIT N
+
+Estos cambios están comentados en 04_VIEWS.sql con ejemplos
+
+
+VERIFICACIÓN
+================================================================================
+
+Después de instalar, verificar:
+
+# Contar tablas (debe ser 26)
+psql -U postgres -d bdudestro -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"
+
+# Contar vistas (debe ser 10)
+psql -U postgres -d bdudestro -c "SELECT COUNT(*) FROM information_schema.views WHERE table_schema='public';"
+
+# Ver estructura de una tabla
+psql -U postgres -d bdudestro -c "\d+ Afiliados"
+
+# Probar una vista
+psql -U postgres -d bdudestro -c "SELECT * FROM VistaOrganizacion LIMIT 5;"
+
+
+PRÓXIMOS PASOS DESPUÉS DE INSTALACIÓN
+================================================================================
+
+1. Migrar datos desde SQL Server
+   - Usar SQL Server Management Studio Export
+   - O herramienta ETL (DTS, SSIS, Talend)
+   - O pg_bulkload / bcp
+
+2. Crear índices adicionales
+   - Descomentar ejemplos en 02_INDICES.sql
+   - O crear nuevos basado en access patterns
+
+3. Convertir Stored Procedures
+   - T-SQL -> PL/pgSQL
+   - Usar 05_PROCEDURES.sql como template
+   - Probar exhaustivamente
+
+4. Configurar seguridad
+   - GRANT/REVOKE permisos
+   - Definir roles
+   - Habilitar auditoría si es necesario
+
+
+CONTACTO / PROBLEMAS
+================================================================================
+
+Si hay errores durante la instalación:
+
+1. Revisar README.md
+2. Revisar CONVERSION_SUMMARY.txt
+3. Revisar 00_INSTRUCCIONES_INSTALACION.txt
+4. Probar en psql interactivo antes de scripts
+5. Revisar logs de PostgreSQL
+
+
+TIPOS DE DATOS CONVERTIDOS
+================================================================================
+
+INT, BIGINT, SMALLINT        → INTEGER, BIGINT, SMALLINT
+VARCHAR(N), TEXT             → VARCHAR(N), TEXT
+NVARCHAR                      → VARCHAR
+DATE, DATETIME               → DATE, TIMESTAMP
+DECIMAL, NUMERIC             → DECIMAL, NUMERIC
+FLOAT, REAL                  → DOUBLE PRECISION, REAL
+IMAGE                        → BYTEA
+GEOMETRY                     → GEOMETRY (PostGIS)
+BIT                          → BOOLEAN
+IDENTITY(1,1)                → BIGSERIAL PRIMARY KEY
+
+
+================================================================================
+CONVERSIÓN COMPLETADA - LISTO PARA INSTALAR
+================================================================================
+
+Base de datos: BDUDESTRO
+Origen:        SQL Server
+Destino:       PostgreSQL 14+
+Tablas:        26 convertidas
+Vistas:        10 convertidas
+FK:            19 mapeadas
+
+Ejecutar 01_TABLAS.sql primero!
+
+================================================================================

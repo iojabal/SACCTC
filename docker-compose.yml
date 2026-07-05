@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:18
+    container_name: udestro-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bdudestro
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  backend:
+    build: ./backend
+    container_name: udestro-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/bdudestro
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+      args:
+        REACT_APP_API_URL: /api
+    container_name: udestro-frontend
+    depends_on:
+      - backend
+
+  proxy:
+    build:
+      context: ./proxy
+    container_name: udestro-proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  pgdata:

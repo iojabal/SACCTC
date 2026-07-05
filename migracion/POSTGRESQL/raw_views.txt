@@ -1,0 +1,73 @@
+﻿CREATE VIEW [dbo].[VistaControlCato]
+AS
+SELECT     TOP (100) PERCENT id_cato, MAX(fecha_control) AS Fecha_Control
+FROM         dbo.ControlCato AS c
+GROUP BY id_cato
+ORDER BY id_cato
+CREATE VIEW [dbo].[VistaControlCatoAux]
+AS
+SELECT     TOP (100) PERCENT c.id_cato, v.Fecha_Control, c.sup_mensura, c.frecuencia, c.num_lote, c.sup_lote, c.coordenadas
+FROM         dbo.ControlCato AS c INNER JOIN
+                      dbo.VistaControlCato AS v ON c.id_cato = v.id_cato AND c.fecha_control = v.Fecha_Control
+ORDER BY v.id_cato
+CREATE VIEW [dbo].[VistaRenovNoDestruidas]
+AS
+SELECT        r.id_cato, r.id_afi, r.nro_solicitud, r.fecha_vencimiento, r.coordenadas, r.resultado
+FROM            dbo.RenovacionProgramada0 AS r INNER JOIN
+                         dbo.RenovacionSolicitudes0 AS s ON r.nro_solicitud = s.nro_solicitud
+WHERE        (r.fecha_destruida IS NULL) AND (r.id_renov IN
+                             (SELECT        MAX(id_renov) AS Expr1
+                               FROM            dbo.RenovacionProgramada0 AS ren
+                               GROUP BY id_cato))
+CREATE VIEW [dbo].[VistaOrganizacion]
+AS
+SELECT     dbo.Federaciones.id_fed, dbo.Federaciones.sigla AS Federaciones, dbo.Centrales.id_cent, dbo.Centrales.nombre AS Centrales, dbo.Sindicatos.id_sind, 
+                      dbo.Sindicatos.nombre AS Sindicatos, dbo.Federaciones.dpto AS Departamento, dbo.Federaciones.prov AS Provincia, dbo.Federaciones.mun AS Municipio
+FROM         dbo.Federaciones INNER JOIN
+                      dbo.Centrales ON dbo.Federaciones.id_fed = dbo.Centrales.id_fed INNER JOIN
+                      dbo.Sindicatos ON dbo.Centrales.id_cent = dbo.Sindicatos.id_cent
+CREATE VIEW [dbo].[VistaListaCatosTemp]
+AS
+SELECT        TOP (100) PERCENT C.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control AS FECHA, V.Federaciones AS FEDERACION, V.Centrales AS CENTRAL, V.Sindicatos AS SINDICATO, ISNULL(A.apellido1, '') 
+                         + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE, A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI, VA.sup_mensura AS MEN, VA.frecuencia, VA.num_lote, VA.sup_lote, VA.coordenadas, 
+                         VR.nro_solicitud AS R_NROSOL, VR.fecha_vencimiento AS R_FVENC, VR.coordenadas AS R_COORD, C.tipo_aut, VR.resultado, A.id_afi
+FROM            dbo.Afiliados AS A INNER JOIN
+                         dbo.Cato AS C ON A.id_afi = C.id_afi INNER JOIN
+                         dbo.VistaOrganizacion AS V ON C.id_sind = V.id_sind INNER JOIN
+                         dbo.VistaControlCatoAux AS VA ON C.id_cato = VA.id_cato LEFT OUTER JOIN
+                         dbo.VistaRenovNoDestruidas AS VR ON C.id_cato = VR.id_cato
+ORDER BY FEDERACION, CENTRAL, SINDICATO, A.apellido1
+CREATE VIEW [dbo].[VistaRenovNoDestruidas2]
+AS
+SELECT id_cato, id_afi, hruta_nro AS nro_solicitud, renov_vencimiento_fecha AS fecha_vencimiento, renov_utm_xy AS coordenadas, resultado, resol_nro, resol_fecha
+FROM     dbo.TramHojaDeRutaRenov AS r
+WHERE  (renov_destruida_fecha IS NULL) AND (id IN
+                      (SELECT MAX(id) AS Expr1
+                       FROM      dbo.TramHojaDeRutaRenov AS ren
+                       GROUP BY id_cato))
+CREATE VIEW [dbo].[VistaListaCatosTemp2]
+AS
+SELECT        TOP (100) PERCENT C.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control AS FECHA, V.Federaciones AS FEDERACION, V.Centrales AS CENTRAL, V.Sindicatos AS SINDICATO, ISNULL(A.apellido1, '') 
+                         + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE, A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI, VA.sup_mensura AS MEN, VA.frecuencia, VA.num_lote, VA.sup_lote, VA.coordenadas, 
+                         VR.nro_solicitud AS R_NROSOL, VR.fecha_vencimiento AS R_FVENC, VR.coordenadas AS R_COORD, C.tipo_aut, VR.resultado, A.id_afi, VR.resol_nro, VR.resol_fecha
+FROM            dbo.Afiliados AS A INNER JOIN
+                         dbo.Cato AS C ON A.id_afi = C.id_afi INNER JOIN
+                         dbo.VistaOrganizacion AS V ON C.id_sind = V.id_sind INNER JOIN
+                         dbo.VistaControlCatoAux AS VA ON C.id_cato = VA.id_cato LEFT OUTER JOIN
+                         dbo.VistaRenovNoDestruidas2 AS VR ON C.id_cato = VR.id_cato
+ORDER BY FEDERACION, CENTRAL, SINDICATO, A.apellido1
+CREATE VIEW [dbo].[VistaListaCatosObsTemp]
+AS
+SELECT        Tab1.id_cato, Tab1.id_fed, Tab1.id_cent, Tab1.id_sind, Tab1.FECHA, Tab1.FEDERACION, Tab1.CENTRAL, Tab1.SINDICATO, Tab1.NOMBRE, Tab1.CI, Tab1.MEN, Obs.tipo_obs, Obs.aclarado
+FROM            dbo.VistaListaCatosTemp2 AS Tab1 INNER JOIN
+                         dbo.Observados AS Obs ON Tab1.id_cato = Obs.id_cato AND Obs.aclarado = 'NO'
+CREATE VIEW [dbo].[VistaTitular]
+AS
+SELECT        c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular, a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codigo_docu, c.obs, a.ext, c.resol_nro, c.resol_fecha
+FROM            dbo.Cambio AS c INNER JOIN
+                         dbo.Afiliados AS a ON c.id_afi_titular = a.id_afi
+CREATE VIEW [dbo].[VistaEntrante]
+AS
+SELECT     c.id_cato, c.id_trf, c.id_afi_nuevo, a.apellido1, a.apellido2, a.nombres, a.ext
+FROM         dbo.Cambio AS c INNER JOIN
+                      dbo.Afiliados AS a ON c.id_afi_nuevo = a.id_afi

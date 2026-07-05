@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Program Files/Docker/Docker/resources/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(xxd \"/c/Users/M S I/Documents/UDESTRO/backend/db/bdudestro_backup.sql\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/pg_dump.exe\" --version)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -l)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/pg_dump.exe\" -U postgres -d bdudestro -F c --encoding=UTF8 -f \"/c/Users/M S I/Documents/UDESTRO/backend/db/bdudestro_backup.dump\" -v)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/pg_restore.exe\" -l \"/c/Users/M S I/Documents/UDESTRO/backend/db/bdudestro_backup.dump\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT ext, COUNT\\(*\\) FROM afiliados GROUP BY ext ORDER BY COUNT\\(*\\) DESC;\")",
+      "Bash(./venv/Scripts/python.exe -m pytest tests -q)",
+      "Bash(npx --no-install eslint src/pages/Cambios/CambioForm.jsx)",
+      "Bash(./venv/Scripts/python.exe -m pytest tests/test_endpoints.py::TestCambios -q)"
+    ]
+  }
+}

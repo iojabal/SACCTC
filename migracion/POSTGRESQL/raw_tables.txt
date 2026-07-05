@@ -1,0 +1,1497 @@
+﻿CREATE TABLE [dbo].[ControlCato](
+	[id_cont] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NULL,
+	[fecha_control] [date] NULL,
+	[id_afi] [varchar](50) NOT NULL,
+	[control_numero] [int] NULL,
+	[coordenadas] [varchar](100) NULL,
+	[sup_mensura] [decimal](8, 4) NULL,
+	[frecuencia] [int] NULL,
+	[edad_anio] [nvarchar](max) NULL,
+	[edad_mes] [nvarchar](max) NULL,
+	[num_lote] [int] NULL,
+	[sup_lote] [int] NULL,
+	[tecnico] [varchar](50) NULL,
+	[descripcion] [varchar](max) NULL,
+	[usuario] [nchar](50) NULL,
+	[id_renov] [bigint] NOT NULL,
+	[geoparcela] [geometry] NULL,
+	[hruta_nro] [varchar](100) NULL,
+ CONSTRAINT [PK_ControlCatosss] PRIMARY KEY CLUSTERED 
+(
+	[id_cont] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Afiliados](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_afi] [varchar](50) NOT NULL,
+	[ext] [varchar](50) NULL,
+	[apellido1] [varchar](50) NULL,
+	[apellido2] [varchar](50) NULL,
+	[nombres] [varchar](50) NULL,
+	[fecha_nac] [date] NULL,
+	[genero] [varchar](10) NULL,
+	[estado] [varchar](10) NULL,
+	[obs] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Afiliados_1] PRIMARY KEY CLUSTERED 
+(
+	[id_afi] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[RenovacionSolicitudes0](
+	[nro_solicitud] [varchar](50) NOT NULL,
+	[fecha_solicitud] [date] NULL,
+	[foto_sol] [image] NULL,
+	[obs_sol] [text] NULL,
+	[fecha_valoracion] [date] NULL,
+	[fecha_info_tec] [date] NULL,
+	[nro_info_tec] [varchar](50) NULL,
+	[ci_tec_encargado] [varchar](50) NULL,
+	[tecnico_info_nro] [varchar](10) NULL,
+	[tecnico_info_fecha] [date] NULL,
+	[tecnico_info_argu_text] [text] NULL,
+	[legal_info_nro] [varchar](10) NULL,
+	[legal_info_fecha] [date] NULL,
+	[legal_info_argu_text] [text] NULL,
+	[resol_nro] [varchar](10) NULL,
+	[resol_fecha] [date] NULL,
+	[resol_argu_text] [text] NULL,
+ CONSTRAINT [PK_RenovacionSolicitudes] PRIMARY KEY CLUSTERED 
+(
+	[nro_solicitud] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[RenovacionProgramada0](
+	[id_renov] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi] [varchar](50) NULL,
+	[nro_solicitud] [varchar](50) NULL,
+	[resultado] [varchar](50) NULL,
+	[tecnico] [varchar](50) NULL,
+	[edad_mes_nuevo] [int] NULL,
+	[superficie] [decimal](5, 4) NULL,
+	[frecuencia] [int] NULL,
+	[coordenadas] [text] NULL,
+	[fecha_vencimiento] [date] NULL,
+	[fecha_destruida] [date] NULL,
+	[observacion] [text] NULL,
+	[ant_valoracion] [int] NULL,
+	[hruta_fecha] [date] NULL,
+	[lote_nro] [varchar](10) NULL,
+	[lote_sup] [int] NULL,
+	[cato_sup] [decimal](8, 4) NULL,
+	[cato_utm_xy] [varchar](250) NULL,
+	[cato_frec] [int] NULL,
+	[cato_edad_anio] [varchar](150) NULL,
+	[cato_edad_mes] [varchar](150) NULL,
+	[tecnico_info_nro] [varchar](20) NULL,
+	[tecnico_info_fecha] [date] NULL,
+	[tecnico_info_causal_inciso] [varchar](5) NULL,
+	[tecnico_info_obs] [text] NULL,
+	[legal_info_nro] [varchar](20) NULL,
+	[legal_info_fecha] [date] NULL,
+	[legal_info_obs] [text] NULL,
+	[resol_nro] [varchar](20) NULL,
+	[resol_fecha] [date] NULL,
+	[resol_obs] [text] NULL,
+	[renov_edad_mes] [int] NULL,
+	[renov_utm_xy] [varchar](250) NULL,
+	[renov_frec] [int] NULL,
+	[renov_sup] [decimal](8, 4) NULL,
+	[usuario_ci] [varchar](20) NULL,
+	[usuario_nombre] [varchar](50) NULL,
+	[usuario_cargo] [varchar](20) NULL,
+	[departamento] [varchar](30) NULL,
+	[provincia] [varchar](30) NULL,
+	[municipio] [varchar](30) NULL,
+	[federacion] [varchar](30) NULL,
+	[central] [varchar](30) NULL,
+	[sindicato] [varchar](30) NULL,
+	[tecnico_val_fecha] [date] NULL,
+ CONSTRAINT [PK_RenovacionProgramada] PRIMARY KEY CLUSTERED 
+(
+	[id_renov] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Cato](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NOT NULL,
+	[id_afi] [varchar](50) NULL,
+	[id_sind] [bigint] NULL,
+	[tipo_aut] [varchar](50) NULL,
+	[descripcion] [text] NULL,
+	[estado] [nvarchar](10) NULL,
+	[fecha_aut] [date] NULL,
+	[solicitud_num] [varchar](20) NULL,
+	[nombre_usr] [varchar](60) NULL,
+ CONSTRAINT [PK_Catoss] PRIMARY KEY CLUSTERED 
+(
+	[id_cato] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Federaciones](
+	[id_fed] [bigint] IDENTITY(1,1) NOT NULL,
+	[sigla] [nvarchar](50) NULL,
+	[obs] [text] NULL,
+	[dpto] [nvarchar](50) NULL,
+	[prov] [nvarchar](50) NULL,
+	[mun] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Federacion] PRIMARY KEY CLUSTERED 
+(
+	[id_fed] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Centrales](
+	[id_cent] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_fed] [bigint] NULL,
+	[nombre] [nvarchar](50) NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_Central] PRIMARY KEY CLUSTERED 
+(
+	[id_cent] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Sindicatos](
+	[id_sind] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cent] [bigint] NULL,
+	[nombre] [nvarchar](50) NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_Sindicato_1] PRIMARY KEY CLUSTERED 
+(
+	[id_sind] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TramHojaDeRutaRenov](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_orig] [bigint] NULL,
+	[hruta_nro] [varchar](100) NOT NULL,
+	[hruta_fecha] [date] NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi] [varchar](50) NULL,
+	[afi_nombre] [varchar](160) NULL,
+	[lote_nro] [varchar](50) NULL,
+	[lote_sup] [int] NULL,
+	[cato_val_fecha] [date] NULL,
+	[cato_sup] [decimal](8, 4) NULL,
+	[cato_utm_xy] [varchar](250) NULL,
+	[cato_frec] [int] NULL,
+	[cato_edad_anio] [varchar](150) NULL,
+	[cato_edad_mes] [varchar](150) NULL,
+	[tecnico_info_nro] [varchar](30) NULL,
+	[tecnico_info_fecha] [date] NULL,
+	[tecnico_info_causal_inciso] [varchar](5) NULL,
+	[tecnico_info_obs] [text] NULL,
+	[tecnico_nombre] [varchar](50) NULL,
+	[tecnico_cargo] [varchar](40) NULL,
+	[tecnico_fecha_imp] [date] NULL,
+	[legal_info_nro] [varchar](30) NULL,
+	[legal_info_fecha] [date] NULL,
+	[legal_info_obs] [text] NULL,
+	[legal_resp_nombre] [varchar](50) NULL,
+	[legal_resp_cargo] [varchar](40) NULL,
+	[legal_fecha_imp] [date] NULL,
+	[resol_nro] [varchar](30) NULL,
+	[resol_fecha] [date] NULL,
+	[resol_obs] [text] NULL,
+	[resol_resp_nombre] [varchar](50) NULL,
+	[resol_resp_cargo] [varchar](40) NULL,
+	[resol_fecha_imp] [date] NULL,
+	[resultado] [varchar](50) NULL,
+	[renov_edad_mes] [int] NULL,
+	[renov_edad_anio] [int] NULL,
+	[renov_utm_xy] [text] NULL,
+	[renov_frec] [int] NULL,
+	[renov_sup] [decimal](8, 4) NULL,
+	[renov_vencimiento_fecha] [date] NULL,
+	[renov_destruida_fecha] [date] NULL,
+	[departamento] [varchar](50) NULL,
+	[provincia] [varchar](50) NULL,
+	[municipio] [varchar](50) NULL,
+	[federacion] [varchar](50) NULL,
+	[central] [varchar](50) NULL,
+	[sindicato] [varchar](50) NULL,
+	[enc_area_renov_nombre] [varchar](50) NULL,
+	[enc_area_renov_cargo] [varchar](50) NULL,
+	[tipo_tramite] [varchar](2) NULL,
+ CONSTRAINT [PK_TramHojaDeRutaRenov] PRIMARY KEY CLUSTERED 
+(
+	[hruta_nro] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Observados](
+	[id_obs] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi] [varchar](50) NULL,
+	[tipo_obs] [varchar](25) NULL,
+	[fecha_obs] [date] NULL,
+	[des_obs] [nvarchar](max) NULL,
+	[aclarado] [varchar](2) NULL,
+	[fecha_acla] [date] NULL,
+	[des_acla] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Observados] PRIMARY KEY CLUSTERED 
+(
+	[id_obs] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Cambio](
+	[id_trf] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi_titular] [varchar](50) NULL,
+	[id_afi_nuevo] [varchar](50) NULL,
+	[tipo_cambio] [varchar](50) NULL,
+	[codigo_docu] [varchar](50) NULL,
+	[fecha_cambio] [date] NULL,
+	[obs] [text] NULL,
+	[resol_nro] [varchar](20) NULL,
+	[resol_fecha] [date] NULL,
+ CONSTRAINT [PK_Cambiosss] PRIMARY KEY CLUSTERED 
+(
+	[id_trf] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Bitacora](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[usuario] [varchar](50) NULL,
+	[host] [varchar](50) NULL,
+	[aplicacion] [varchar](50) NULL,
+	[operacion] [varchar](50) NULL,
+	[fecha_transac] [datetime] NULL,
+	[tabla] [varchar](50) NULL,
+	[id_afi] [varchar](50) NULL,
+	[ext] [varchar](50) NULL,
+	[apellido1] [varchar](50) NULL,
+	[apellido2] [varchar](50) NULL,
+	[nombres] [varchar](50) NULL,
+	[fecha_nac] [date] NULL,
+	[genero] [varchar](10) NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_Bitacora] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[ControlCatoBitacora](
+	[id_cont] [int] IDENTITY(1,1) NOT NULL,
+	[usuario] [varchar](50) NULL,
+	[host] [varchar](50) NULL,
+	[aplicacion] [varchar](50) NULL,
+	[operacion] [varchar](50) NULL,
+	[fecha_transac] [datetime] NULL,
+	[tabla] [varchar](50) NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi] [varchar](50) NULL,
+	[fecha_control] [date] NULL,
+	[control_numero] [int] NULL,
+	[sup_mensura] [float] NULL,
+	[frecuencia] [int] NULL,
+	[num_lote] [int] NULL,
+	[coordenadas] [varchar](100) NULL,
+	[tecnico] [varchar](50) NULL,
+	[descripcion] [varchar](max) NULL,
+ CONSTRAINT [PK_ControlCatoBitacora] PRIMARY KEY CLUSTERED 
+(
+	[id_cont] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[ObservadosBi](
+	[id_obs] [bigint] NOT NULL,
+	[id_cato] [bigint] NULL,
+	[id_afi] [varchar](50) NULL,
+	[tipo_obs] [varchar](50) NULL,
+	[fecha_obs] [date] NULL,
+	[des_obs] [nvarchar](max) NULL,
+	[aclarado] [varchar](2) NULL,
+	[fecha_acla] [date] NULL,
+	[des_acla] [nvarchar](max) NULL,
+	[tipo_transac] [varchar](20) NULL,
+	[tipo_reg] [varchar](3) NULL,
+	[inicio_sesion] [varchar](70) NULL,
+	[usuario] [varchar](50) NULL,
+	[aplicacion] [varchar](60) NULL,
+	[hostname] [varchar](30) NULL,
+	[fecha_transac] [datetime] NOT NULL,
+	[host_ip] [varchar](255) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TablaAfiliadosAux](
+	[fecha_control] [date] NULL,
+	[id_fed] [float] NULL,
+	[federacion] [nvarchar](255) NULL,
+	[id_cent] [float] NULL,
+	[central] [nvarchar](255) NULL,
+	[id_sind] [float] NULL,
+	[sindicato] [nvarchar](255) NULL,
+	[id_cato] [float] NULL,
+	[apellidos_nombres] [nvarchar](255) NULL,
+	[apellido1] [nvarchar](255) NULL,
+	[apellido2] [nvarchar](255) NULL,
+	[nombres] [nvarchar](255) NULL,
+	[id_afi] [nvarchar](50) NULL,
+	[ext] [nvarchar](255) NULL,
+	[cod_fec_nac] [nvarchar](255) NULL,
+	[mensura] [float] NULL,
+	[frecuencia] [int] NULL,
+	[edad_anio] [int] NULL,
+	[edad_mes] [int] NULL,
+	[num_lote] [int] NULL,
+	[sup_lote] [int] NULL,
+	[obs] [nvarchar](max) NULL,
+	[tipo_aut] [nvarchar](255) NULL,
+	[tipo_obs] [nvarchar](255) NULL,
+	[det_poza_maceracion] [nvarchar](255) NULL,
+	[det_sin_catastro] [nvarchar](255) NULL,
+	[det_incremento] [nvarchar](255) NULL,
+	[det_registro_multiple] [nvarchar](255) NULL,
+	[det_solicitud] [nvarchar](255) NULL,
+	[det_control_pendiente] [nvarchar](255) NULL,
+	[det_otros] [nvarchar](255) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Tecnicos](
+	[tec_id] [varchar](10) NOT NULL,
+	[tec_nombres] [varchar](50) NULL,
+	[tec_num_cel] [varchar](50) NULL,
+	[tec_genero] [nvarchar](1) NULL,
+	[tec_cargo] [varchar](20) NULL,
+	[tec_obs] [text] NULL,
+	[tec_activo] [varchar](2) NULL,
+ CONSTRAINT [PK_Tecnicos] PRIMARY KEY CLUSTERED 
+(
+	[tec_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TecnicosObs](
+	[obs_id] [int] IDENTITY(1,1) NOT NULL,
+	[tec_id] [varchar](10) NULL,
+	[obs_tipo] [varchar](50) NULL,
+	[obs_fecha] [date] NULL,
+	[obs_fecha_acla] [date] NULL,
+	[obs_camp] [varchar](20) NULL,
+	[obs_detalle] [text] NULL,
+	[obs_detalle_acla] [text] NULL,
+	[obs_enc_rev] [varchar](50) NULL,
+	[obs_aclarado] [varchar](2) NULL,
+ CONSTRAINT [PK_TecnicosObs] PRIMARY KEY CLUSTERED 
+(
+	[obs_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TmpListaCatosObs](
+	[id_cato] [bigint] NULL,
+	[id_fed] [bigint] NULL,
+	[id_cent] [bigint] NULL,
+	[id_sind] [bigint] NULL,
+	[FECHA] [date] NULL,
+	[FEDERACION] [nvarchar](50) NULL,
+	[CENTRAL] [nvarchar](50) NULL,
+	[SINDICATO] [nvarchar](50) NULL,
+	[NOMBRE] [nvarchar](200) NULL,
+	[CI] [nvarchar](100) NULL,
+	[MEN] [float] NULL,
+	[tipo_obs] [nvarchar](max) NULL,
+	[aclarado] [nvarchar](2) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TmpObsAux](
+	[id_cato] [bigint] NULL,
+	[tipo_obs] [varchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TramCite](
+	[cite] [varchar](20) NOT NULL,
+	[hruta] [varchar](20) NOT NULL,
+	[fecha_cite] [date] NOT NULL,
+	[tipo_informe] [varchar](50) NOT NULL,
+	[id_usr] [int] NOT NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_TramCite] PRIMARY KEY CLUSTERED 
+(
+	[cite] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TramHojaDeRuta](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[hruta] [varchar](20) NOT NULL,
+	[hruta_fecha] [date] NOT NULL,
+	[id_cato] [bigint] NOT NULL,
+	[cato_utm_xy] [varchar](50) NULL,
+	[lote_nro] [varchar](5) NULL,
+	[lote_nro_nuevo] [varchar](5) NULL,
+	[sustitucion] [varchar](20) NULL,
+	[sustitucion_tipo] [varchar](20) NULL,
+	[tecnico_info_nro] [varchar](10) NULL,
+	[tecnico_info_fecha] [date] NULL,
+	[tecnico_info_obs] [text] NULL,
+	[legal_info_nro] [varchar](10) NULL,
+	[legal_info_fecha] [date] NULL,
+	[legal_info_obs] [text] NULL,
+	[legal_resol_nro] [varchar](10) NULL,
+	[legal_resol_fecha] [date] NULL,
+	[legal_resol_obs] [text] NULL,
+	[titular_ci] [varchar](20) NULL,
+	[titular_exp] [varchar](10) NULL,
+	[titular_nombre] [varchar](50) NULL,
+	[solicitante_ci] [varchar](20) NULL,
+	[solicitante_nombre] [varchar](50) NULL,
+	[departamento] [varchar](30) NULL,
+	[provincia] [varchar](30) NULL,
+	[municipio] [varchar](30) NULL,
+	[federacion] [varchar](30) NULL,
+	[central] [varchar](30) NULL,
+	[sindicato] [varchar](30) NULL,
+	[estado] [varchar](50) NULL,
+	[login_usr] [varchar](40) NULL,
+ CONSTRAINT [PK_TramSolicitudes] PRIMARY KEY CLUSTERED 
+(
+	[hruta] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[TramHojaDeRutaRenovFormDir](
+	[id_form] [int] NOT NULL,
+	[id_sind] [int] NULL,
+	[fecha_verificacion] [datetime] NULL,
+	[lugar_espera] [varchar](150) NULL,
+	[tecnico_resp1] [varchar](100) NULL,
+	[tecnico_resp2] [varchar](100) NULL,
+	[fecha_entrega] [date] NULL,
+	[nombre_dirigente] [varchar](100) NULL,
+ CONSTRAINT [PK_TramHojaDeRutaRenovFormDir] PRIMARY KEY CLUSTERED 
+(
+	[id_form] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+CREATE TABLE [dbo].[TramHojaDeRutaRenovSolic](
+	[id_cato] [bigint] NOT NULL,
+	[id_form] [int] NULL,
+	[id_afi] [varchar](50) NULL
+) ON [PRIMARY]
+CREATE TABLE [dbo].[TramSeguimiento](
+	[id_segui] [int] IDENTITY(1,1) NOT NULL,
+	[hruta] [varchar](20) NOT NULL,
+	[area_origen] [varchar](50) NOT NULL,
+	[id_urs_origen] [int] NOT NULL,
+	[operacion] [varchar](50) NOT NULL,
+	[area_destino] [varchar](50) NULL,
+	[fecha_operacion] [datetime] NOT NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_TramSeguimiento] PRIMARY KEY CLUSTERED 
+(
+	[id_segui] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Traslados](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[id_cato] [bigint] NOT NULL,
+	[id_sind_origen] [bigint] NOT NULL,
+	[id_sind_destino] [bigint] NOT NULL,
+	[obs] [text] NULL,
+ CONSTRAINT [PK_Traslados] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+CREATE TABLE [dbo].[Usuarios](
+	[id_usr] [int] NOT NULL,
+	[nombre_apellido] [varchar](40) NOT NULL,
+	[cargo] [varchar](50) NULL,
+	[login_usr] [varchar](40) NULL,
+	[clave_usr] [varchar](40) NULL,
+	[tipo] [varchar](20) NULL,
+	[estado] [varchar](20) NULL,
+ CONSTRAINT [PK_Usuarios_1] PRIMARY KEY CLUSTERED 
+(
+	[id_usr] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+CREATE procedure [dbo].[ProcCatosTipoAut]
+@id_cod_org bigint,
+@opcion_criterio nvarchar(20),
+@CadSql nvarchar(MAX)
+as
+
+
+SET NOCOUNT ON
+
+CREATE TABLE #CatosTemp
+(
+id_cato BIGINT,
+id_fed bigint,
+id_cent bigint,
+id_sind bigint,
+FECHA date,
+FEDERACION nvarchar(50),
+CENTRAL nvarchar(50),
+SINDICATO nvarchar(50),
+NOMBRE nvarchar(200),
+CI nvarchar(100),
+MEN float,
+tipo_aut nvarchar(30))
+
+
+
+
+declare @QuerySql nvarchar(MAX);
+
+if (@opcion_criterio='POR_FEDERACIONES' AND @CadSql is not null)
+begin
+set @QuerySql = N'INSERT INTO #CatosTemp SELECT v.id_cato,id_fed,id_cent,id_sind,v.FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM VistaListaCatosTemp v where('+@CadSql+ ') and v.id_fed = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+
+if (@opcion_criterio='POR_CENTRALES' AND @CadSql is not null)
+begin
+set @QuerySql = N'INSERT INTO #CatosTemp SELECT v.id_cato,id_fed,id_cent,id_sind,v.FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM VistaListaCatosTemp v where('+@CadSql+ ') and v.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+
+if (@opcion_criterio='POR_SINDICATOS' AND @CadSql is not null)
+begin
+set @QuerySql = N'INSERT INTO #CatosTemp SELECT v.id_cato,id_fed,id_cent,id_sind,v.FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM VistaListaCatosTemp v where('+@CadSql+ ') and v.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+
+if (@opcion_criterio='TODOS' AND @CadSql is not null)
+begin
+set @QuerySql = N'INSERT INTO #CatosTemp SELECT v.id_cato,id_fed,id_cent,id_sind,v.FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM VistaListaCatosTemp v where('+@CadSql+ ')'
+end
+
+
+
+
+EXEC sp_executesql @QuerySql
+ --SELECT v.id_cato,CONVERT(VARCHAR(10),v.FECHA,103) FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM #CatosTemp v
+SELECT v.id_cato,CONVERT(VARCHAR(10),v.FECHA,103) FECHA,v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE,v.CI,v.MEN,v.tipo_aut FROM #CatosTemp v order by v.FEDERACION,v.CENTRAL,v.SINDICATO,v.NOMBRE ASC
+CREATE PROCEDURE [dbo].[ProcConcatObs]
+@id_cod_org bigint,
+@opcion_criterio nvarchar(20),
+@CadSql nvarchar(MAX)
+AS
+
+BEGIN
+
+
+
+CREATE TABLE #ObsAux
+(
+id_cato BIGINT,
+id_fed bigint,
+id_cent bigint,
+id_sind bigint,
+FECHA date,
+FEDERACION nvarchar(50),
+CENTRAL nvarchar(50),
+SINDICATO nvarchar(50),
+NOMBRE nvarchar(200),
+CI nvarchar(100),
+MEN float,
+tipo_obs nvarchar(MAX),
+aclarado nvarchar(2)
+
+)
+DECLARE @ObsAux1 TABLE
+(
+
+id_cato BIGINT,
+
+tipo_obs VARCHAR(MAX)
+
+)
+
+SET NOCOUNT ON
+
+DECLARE @id_cato_aux bigint, @tip_obs varchar(max)
+declare @QuerySql nvarchar(MAX);
+declare @AuxSql nvarchar(MAX);
+
+/************************************************************/
+/*
+if (@opcion_criterio='POR_FEDERACIONES')
+begin
+INSERT INTO @ObsAux (id_cato)
+SELECT Obs.id_cato
+FROM VistaListaCatosObsTemp Obs where Obs.id_fed = @id_cod_org
+--GROUP BY id_cato
+
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM VistaListaCatosObsTemp ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_fed = @id_cod_org
+
+  UPDATE @ObsAux
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux WHERE @id_cato_aux < id_cato)
+  --print @id_cato_aux 
+  
+END 
+
+
+INSERT INTO @ObsAux2 (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux
+
+
+SELECT distinct t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+FROM VistaListaCatosTemp t
+LEFT JOIN @ObsAux2 ob ON (ob.id_cato = t.id_cato)
+WHERE  t.id_fed = @id_cod_org
+ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+
+end
+*/
+/***************************************************************/
+
+
+
+
+
+if (@opcion_criterio='POR_FEDERACIONES')
+begin
+
+
+if(@CadSql IS NOT NULL)
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.id_fed = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.id_fed = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+ print @QuerySql 
+ EXEC sp_executesql @QuerySql
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux
+ --DELETE FROM TmpObsAux
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.id_fed = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista de observados
+begin
+SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+FROM VistaListaCatosTemp t
+LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+WHERE  t.id_fed = @id_cod_org and ob.id_cato = t.id_cato
+ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+    SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+    FROM VistaListaCatosTemp t
+    LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+    WHERE  t.id_fed = @id_cod_org
+    ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+    end
+end
+
+
+
+
+
+if (@opcion_criterio='POR_CENTRALES')
+begin
+
+
+if(@CadSql IS NOT NULL)
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+ print @QuerySql 
+ EXEC sp_executesql @QuerySql
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux
+ --DELETE FROM TmpObsAux
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.id_cent = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista de observados
+begin
+SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+FROM VistaListaCatosTemp t
+LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+WHERE  t.id_cent = @id_cod_org and ob.id_cato = t.id_cato
+ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+    SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+    FROM VistaListaCatosTemp t
+    LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+    WHERE  t.id_cent = @id_cod_org
+    ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+    end
+end
+
+/***************************************/
+
+if (@opcion_criterio='POR_SINDICATOS')
+begin
+--declare @QuerySql nvarchar(MAX);
+--declare @AuxSql nvarchar(MAX);
+
+if(@CadSql IS NOT NULL)
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+--set @QuerySql = N'INSERT INTO TmpObsAux(id_cato)SELECT Obs.id_cato FROM VistaListaCatosObsTemp Obs where Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.aclarado = ''NO''and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+ print @QuerySql 
+ EXEC sp_executesql @QuerySql
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux
+ --DELETE FROM TmpObsAux
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_sind = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista de observados
+begin
+SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+FROM VistaListaCatosTemp t
+LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+WHERE  t.id_sind = @id_cod_org and ob.id_cato = t.id_cato
+ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+    SELECT t.id_cato,CONVERT(VARCHAR(10),t.FECHA,103) FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,ISNULL(ob.tipo_obs,'') OBS
+    FROM VistaListaCatosTemp t
+    LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+    WHERE  t.id_sind = @id_cod_org
+    ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+    end
+end
+
+/*************************************************/
+/*
+if (@opcion_criterio='TODOS')
+begin
+
+
+end
+*/
+
+END;
+CREATE PROCEDURE [dbo].[ProcGetListCamp]
+@id_cod_org bigint,
+@opcion_criterio nvarchar(20),
+@CadSql nvarchar(MAX),
+@CadSqlAux nvarchar(MAX)
+AS
+
+BEGIN
+
+--declare @CadSql nvarchar(MAX)
+--declare @CadSqlAux nvarchar(MAX)
+--set @CadSql = 'VACIO'
+--set @CadSqlAux = 'VACIO'
+
+CREATE TABLE #ObsAux
+(
+id_cato BIGINT,
+id_fed bigint,
+id_cent bigint,
+id_sind bigint,
+FECHA date,
+FEDERACION nvarchar(50),
+CENTRAL nvarchar(50),
+SINDICATO nvarchar(50),
+NOMBRE nvarchar(200),
+CI nvarchar(100),
+MEN float,
+tipo_obs nvarchar(MAX),
+aclarado nvarchar(2)
+
+)
+
+CREATE TABLE #CatosCheked
+(
+ id_cato bigint
+ 
+)
+
+
+DECLARE @ObsAux1 TABLE
+(
+
+id_cato BIGINT,
+
+tipo_obs VARCHAR(MAX)
+
+)
+CREATE TABLE #TablaTemp1
+(
+ --t1.id_cato,CONVERT(nvarchar(10),t1.control_fecha,103) FECHA,t1.control_fed FEDERACION,t1.control_central CENTRAL,t1.control_sindicato SINDICATO,t1.control_nombre NOMBRE,t1.control_ci CI,t1.control_men MEN,t1.control_frecuencia FREC,t2.trf_de TRF_NUEVA,t1.control_tipo_obs OBS FROM #TablaTemp1 t1
+id_cato BIGINT not null,
+control_fecha date,
+control_fed nvarchar(50),
+control_central nvarchar(50),
+control_sindicato nvarchar(50),
+control_nombre nvarchar(200),
+control_ci nvarchar(100),
+control_men float,
+control_frecuencia int,
+control_tipo_obs nvarchar(MAX),
+control_renov_nrosol nvarchar(20),
+control_renov_fexp date,
+control_renov_coord nvarchar(MAX),
+control_renov_resultado nvarchar(50)
+
+primary key (id_cato)
+)
+
+
+CREATE TABLE #TablaTemp2
+(
+id_cato bigint not null,
+id_afi_titular nvarchar(100),
+trf_de nvarchar(MAX),
+primary key (id_cato)
+)
+
+SET NOCOUNT ON
+
+DECLARE @id_cato_aux bigint, @tip_obs varchar(max)
+declare @QuerySql nvarchar(MAX);
+declare @QuerySqlCheked nvarchar(MAX);
+declare @AuxSql nvarchar(MAX);
+
+
+
+if (@opcion_criterio='POR_CENTRALES')
+begin
+if(@CadSql IS NOT NULL)
+--if(NOT @CadSql ='VACIO')
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSqlAux+ ') and Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySqlCheked = N'INSERT INTO #CatosCheked(id_cato) SELECT distinct id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+
+
+end
+ 
+ EXEC sp_executesql @QuerySql;
+ EXEC sp_executesql @QuerySqlCheked;
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux;
+ 
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_cent = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista de observados
+--if(NOT @CadSql ='VACIO')
+begin
+		
+		
+		INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado)
+		SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS,t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado
+		FROM  VistaListaCatosTemp t
+		LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+		WHERE  t.id_cent = @id_cod_org and t.id_cato not in(SELECT id_cato FROM #CatosCheked)
+		ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+		
+		
+		
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+		
+		INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado)
+		SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS,t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado
+		FROM VistaListaCatosTemp t
+		LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+		WHERE  t.id_cent = @id_cod_org
+		ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+		
+    end
+
+ 
+
+
+
+
+end
+
+
+
+/***************************************/
+
+if (@opcion_criterio='POR_SINDICATOS')
+begin
+
+if(@CadSql IS NOT NULL)
+--if(NOT @CadSql ='VACIO')
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSqlAux+ ') and Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySqlCheked = N'INSERT INTO #CatosCheked(id_cato) SELECT distinct id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+
+
+end
+ 
+ 
+
+
+ EXEC sp_executesql @QuerySql;
+ EXEC sp_executesql @QuerySqlCheked;
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux;
+ 
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_sind = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+
+
+
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+    
+
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista en base a la exclusion de observados
+--if(NOT @CadSql ='VACIO')
+begin
+ --PRINT N'HOLAAAAA.'  
+    
+    INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado)
+	SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS, t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado
+	FROM  VistaListaCatosTemp t
+	LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+	LEFT JOIN VistaRenovNoDestruidas v ON (v.id_cato = t.id_cato)
+	WHERE  t.id_sind = @id_cod_org and t.id_cato not in(SELECT id_cato FROM #CatosCheked)
+	ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+     
+    INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado)
+    SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS, t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado
+	FROM VistaListaCatosTemp t
+    LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+    LEFT JOIN VistaRenovNoDestruidas v ON (v.id_cato = t.id_cato)
+    WHERE  t.id_sind = @id_cod_org
+    ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+    
+	
+	end
+	/*
+    declare @contador int
+	select @contador =count(id_cato) from #TablaTemp1
+    PRINT N'CONTADOR='+CONVERT(nvarchar(250),@contador) 
+	*/
+
+
+end--end if principal
+    
+   
+    --INSERT INTO #TablaTemp2(id_cato,id_afi_titular,trf_de)--obtiene al dueño anterior
+	--select  c.id_cato,c.id_afi_titular,'TRF.DE: '+(ISNULL(af.apellido1,'')+' '+ISNULL(af.apellido2,'')+' '+ISNULL(af.nombres,''))+'('+ISNULL(c.codigo_docu,'')+'-'+convert(nvarchar(10),c.fecha_cambio,103)+')'
+    --from Cambio c, Cato,Afiliados af  
+    --where c.id_afi_nuevo= cato.id_afi and c.id_cato= Cato.id_cato and af.id_afi= c.id_afi_titular;
+
+	--ANTES DE MODIFICAR EN LA PARTE DE NOT IN
+	INSERT INTO #TablaTemp2(id_cato,id_afi_titular,trf_de)--obtiene al dueño anterior
+	select  c.id_cato,c.id_afi_titular,'TRF.DE: '+(ISNULL(af.apellido1,'')+' '+ISNULL(af.apellido2,'')+' '+ISNULL(af.nombres,''))+'('+ISNULL(c.codigo_docu,'')+'-'+convert(nvarchar(10),c.fecha_cambio,103)+')'
+    from Cambio c, Cato,Afiliados af  
+    where c.id_afi_nuevo= cato.id_afi and c.id_cato= Cato.id_cato and af.id_afi= c.id_afi_titular and c.id_afi_nuevo not in(select cont.id_afi from ControlCato cont where c.id_cato=cont.id_cato)
+
+
+	--Genera la la lista para campamentos completa
+	SELECT t1.id_cato,CONVERT(nvarchar(10),t1.control_fecha,103) FECHA,t1.control_fed FEDERACION,t1.control_central CENTRAL,t1.control_sindicato SINDICATO,t1.control_nombre NOMBRE,t1.control_ci CI,t1.control_men MEN,t1.control_frecuencia FREC,t2.trf_de TRF_NUEVA,t1.control_renov_nrosol R_NROSOL,CONVERT(nvarchar(10), t1.control_renov_fexp,103) R_FEXP,t1.control_renov_coord R_COORD,t1.control_tipo_obs OBS,t1.control_renov_resultado FROM #TablaTemp1 t1
+	LEFT JOIN #TablaTemp2 t2 ON (t1.id_cato=t2.id_cato) order by t1.control_nombre asc
+   
+    --select t.id_cato,CONVERT(nvarchar(10),t.fecha_control,103) FECHA,t.tecnico FEDERACION,t.tecnico CENTRAL,t.tecnico SINDICATO,t.coordenadas NOMBRE,t.id_afi CI,t.sup_mensura MEN,t.frecuencia FREC,t.descripcion TRF_NUEVA,t.id_afi R_NROSOL,CONVERT(nvarchar(10),t.fecha_control,103) R_FEXP,t.coordenadas R_COORD,t.descripcion OBS,t.tecnico control_renov_resultado from  ControlCato t
+
+END;
+CREATE PROCEDURE [dbo].[ProcGetListCamp2]
+@id_cod_org bigint,
+@opcion_criterio nvarchar(20),
+@CadSql nvarchar(MAX),
+@CadSqlAux nvarchar(MAX)
+AS
+
+BEGIN
+
+--declare @CadSql nvarchar(MAX)
+--declare @CadSqlAux nvarchar(MAX)
+--set @CadSql = 'VACIO'
+--set @CadSqlAux = 'VACIO'
+
+CREATE TABLE #ObsAux
+(
+id_cato BIGINT,
+id_fed bigint,
+id_cent bigint,
+id_sind bigint,
+FECHA date,
+FEDERACION nvarchar(50),
+CENTRAL nvarchar(50),
+SINDICATO nvarchar(50),
+NOMBRE nvarchar(200),
+CI nvarchar(100),
+MEN float,
+tipo_obs nvarchar(MAX),
+aclarado nvarchar(2)
+
+)
+
+CREATE TABLE #CatosCheked
+(
+ id_cato bigint
+ 
+)
+
+
+DECLARE @ObsAux1 TABLE
+(
+
+id_cato BIGINT,
+
+tipo_obs VARCHAR(MAX)
+
+)
+CREATE TABLE #TablaTemp1
+(
+ --t1.id_cato,CONVERT(nvarchar(10),t1.control_fecha,103) FECHA,t1.control_fed FEDERACION,t1.control_central CENTRAL,t1.control_sindicato SINDICATO,t1.control_nombre NOMBRE,t1.control_ci CI,t1.control_men MEN,t1.control_frecuencia FREC,t2.trf_de TRF_NUEVA,t1.control_tipo_obs OBS FROM #TablaTemp1 t1
+id_cato BIGINT not null,
+control_fecha date,
+control_fed nvarchar(50),
+control_central nvarchar(50),
+control_sindicato nvarchar(50),
+control_nombre nvarchar(200),
+control_ci nvarchar(100),
+control_men float,
+control_frecuencia int,
+control_tipo_obs nvarchar(MAX),
+control_renov_nrosol nvarchar(20),
+control_renov_fexp date,
+control_renov_coord nvarchar(MAX),
+control_renov_resultado nvarchar(50),
+resol_nro nvarchar(30),
+resol_fecha date
+
+
+primary key (id_cato)
+)
+
+
+CREATE TABLE #TablaTemp2
+(
+id_cato bigint not null,
+id_afi_titular nvarchar(100),
+trf_de nvarchar(MAX),
+primary key (id_cato)
+)
+
+SET NOCOUNT ON
+
+DECLARE @id_cato_aux bigint, @tip_obs varchar(max)
+declare @QuerySql nvarchar(MAX);
+declare @QuerySqlCheked nvarchar(MAX);
+declare @AuxSql nvarchar(MAX);
+
+
+
+if (@opcion_criterio='POR_CENTRALES')
+begin
+if(@CadSql IS NOT NULL)
+--if(NOT @CadSql ='VACIO')
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSqlAux+ ') and Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySqlCheked = N'INSERT INTO #CatosCheked(id_cato) SELECT distinct id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.aclarado = ''NO'' and Obs.id_cent = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+
+
+end
+ 
+ EXEC sp_executesql @QuerySql;
+ EXEC sp_executesql @QuerySqlCheked;
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux;
+ 
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_cent = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista de observados
+--if(NOT @CadSql ='VACIO')
+begin
+		
+		
+		INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado,resol_nro,resol_fecha)
+		SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS,t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado,t.resol_nro,t.resol_fecha
+		FROM  VistaListaCatosTemp2 t
+		LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+		WHERE  t.id_cent = @id_cod_org and t.id_cato not in(SELECT id_cato FROM #CatosCheked)
+		ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+		
+		
+		
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+		
+		INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado,resol_nro,resol_fecha)
+		SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS,t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado,t.resol_nro,t.resol_fecha
+		FROM VistaListaCatosTemp2 t
+		LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+		WHERE  t.id_cent = @id_cod_org
+		ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+		
+    end
+
+ 
+
+
+
+
+end
+
+
+
+/***************************************/
+
+if (@opcion_criterio='POR_SINDICATOS')
+begin
+
+if(@CadSql IS NOT NULL)
+--if(NOT @CadSql ='VACIO')
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where('+@CadSqlAux+ ') and Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+set @QuerySqlCheked = N'INSERT INTO #CatosCheked(id_cato) SELECT distinct id_cato FROM VistaListaCatosObsTemp Obs where('+@CadSql+ ') and Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+end
+else
+begin
+
+set @QuerySql = N'INSERT INTO #ObsAux SELECT * FROM VistaListaCatosObsTemp Obs where Obs.aclarado = ''NO'' and Obs.id_sind = '+CONVERT(NVARCHAR(MAX),@id_cod_org)
+
+
+end
+ 
+ 
+
+
+ EXEC sp_executesql @QuerySql;
+ EXEC sp_executesql @QuerySqlCheked;
+ INSERT INTO @ObsAux1(id_cato)SELECT id_cato FROM #ObsAux;
+ 
+
+SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1)
+
+WHILE @id_cato_aux is not null
+BEGIN
+  SET @tip_obs = null
+ 
+  
+  SELECT @tip_obs =
+    CASE
+      WHEN @tip_obs is null
+      THEN ''
+      ELSE @tip_obs + ', '
+    END
+    +ob.tipo_obs  --+ ':' + convert(varchar(30),s.Value)
+  FROM #ObsAux ob
+  WHERE ob.id_cato = @id_cato_aux and ob.aclarado = 'NO' and ob.id_sind = @id_cod_org
+
+  UPDATE @ObsAux1
+  SET 
+     tipo_obs = @tip_obs
+     
+  WHERE id_cato = @id_cato_aux
+
+  SET @id_cato_aux = (SELECT MIN(id_cato) FROM @ObsAux1 WHERE @id_cato_aux < id_cato)
+  
+  
+END 
+
+
+
+
+
+DELETE FROM #ObsAux
+INSERT INTO #ObsAux (id_cato,tipo_obs)
+SELECT distinct *
+FROM @ObsAux1
+
+    
+
+
+if(@CadSql IS NOT NULL)--obtiene solo la lista en base a la exclusion de observados
+--if(NOT @CadSql ='VACIO')
+begin
+ --PRINT N'HOLAAAAA.'  
+    
+    INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado,resol_nro,resol_fecha)
+	SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS, t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado,t.resol_nro,t.resol_fecha
+	FROM  VistaListaCatosTemp2 t
+	LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+	LEFT JOIN VistaRenovNoDestruidas2 v ON (v.id_cato = t.id_cato)
+	WHERE  t.id_sind = @id_cod_org and t.id_cato not in(SELECT id_cato FROM #CatosCheked)
+	ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+		
+end
+else--en caso de vacio obtiene la lista general entre observados y no observados
+    begin
+     
+    INSERT INTO #TablaTemp1(id_cato,control_fecha,control_fed,control_central,control_sindicato,control_nombre,control_ci,control_men,control_frecuencia,control_tipo_obs,control_renov_nrosol,control_renov_fexp,control_renov_coord,control_renov_resultado,resol_nro,resol_fecha)
+    SELECT t.id_cato,t.FECHA FECHA,t.FEDERACION,t.CENTRAL,t.SINDICATO,t.NOMBRE,t.CI,t.MEN,t.frecuencia FREC,ISNULL(ob.tipo_obs,'') OBS, t.R_NROSOL,t.R_FVENC,t.R_COORD,t.resultado,t.resol_nro,t.resol_fecha
+	FROM VistaListaCatosTemp2 t
+    LEFT JOIN #ObsAux ob ON (ob.id_cato = t.id_cato)
+    LEFT JOIN VistaRenovNoDestruidas2 v ON (v.id_cato = t.id_cato)
+    WHERE  t.id_sind = @id_cod_org
+    ORDER BY T.FEDERACION,T.CENTRAL,T.SINDICATO,T.NOMBRE ASC
+    
+	
+	end
+	/*
+    declare @contador int
+	select @contador =count(id_cato) from #TablaTemp1
+    PRINT N'CONTADOR='+CONVERT(nvarchar(250),@contador) 
+	*/
+
+
+end--end if principal
+    
+   
+    --INSERT INTO #TablaTemp2(id_cato,id_afi_titular,trf_de)--obtiene al dueño anterior
+	--select  c.id_cato,c.id_afi_titular,'TRF.DE: '+(ISNULL(af.apellido1,'')+' '+ISNULL(af.apellido2,'')+' '+ISNULL(af.nombres,''))+'('+ISNULL(c.codigo_docu,'')+'-'+convert(nvarchar(10),c.fecha_cambio,103)+')'
+    --from Cambio c, Cato,Afiliados af  
+    --where c.id_afi_nuevo= cato.id_afi and c.id_cato= Cato.id_cato and af.id_afi= c.id_afi_titular;
+
+	--ANTES DE MODIFICAR EN LA PARTE DE NOT IN
+	INSERT INTO #TablaTemp2(id_cato,id_afi_titular,trf_de)--obtiene al dueño anterior
+	select  c.id_cato,c.id_afi_titular,'TRF.DE: '+(ISNULL(af.apellido1,'')+' '+ISNULL(af.apellido2,'')+' '+ISNULL(af.nombres,''))+'('+ISNULL(c.codigo_docu,'')+'-'+convert(nvarchar(10),c.fecha_cambio,103)+')'
+    from Cambio c, Cato,Afiliados af  
+    where c.id_afi_nuevo= cato.id_afi and c.id_cato= Cato.id_cato and af.id_afi= c.id_afi_titular and c.id_afi_nuevo not in(select cont.id_afi from ControlCato cont where c.id_cato=cont.id_cato)
+
+
+	--Genera la la lista para campamentos completa
+	SELECT t1.id_cato,CONVERT(nvarchar(10),t1.control_fecha,103) FECHA,t1.control_fed FEDERACION,t1.control_central CENTRAL,t1.control_sindicato SINDICATO,t1.control_nombre NOMBRE,t1.control_ci CI,t1.control_men MEN,t1.control_frecuencia FREC,t2.trf_de TRF_NUEVA,t1.control_renov_nrosol R_NROSOL,CONVERT(nvarchar(10), t1.control_renov_fexp,103) R_FEXP,t1.control_renov_coord R_COORD,t1.control_tipo_obs OBS,t1.control_renov_resultado,t1.resol_nro,t1.resol_fecha FROM #TablaTemp1 t1
+	LEFT JOIN #TablaTemp2 t2 ON (t1.id_cato=t2.id_cato) order by t1.control_nombre asc
+   
+    --select t.id_cato,CONVERT(nvarchar(10),t.fecha_control,103) FECHA,t.tecnico FEDERACION,t.tecnico CENTRAL,t.tecnico SINDICATO,t.coordenadas NOMBRE,t.id_afi CI,t.sup_mensura MEN,t.frecuencia FREC,t.descripcion TRF_NUEVA,t.id_afi R_NROSOL,CONVERT(nvarchar(10),t.fecha_control,103) R_FEXP,t.coordenadas R_COORD,t.descripcion OBS,t.tecnico control_renov_resultado,t.hruta_nro resol_nro,t.fecha_control resol_fecha from  ControlCato t
+
+END;

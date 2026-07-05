@@ -1,0 +1,265 @@
+================================================================================
+CHECKLIST DE CORRECCIONES ESPECÍFICAS
+================================================================================
+
+ARCHIVO: 04_VIEWS.sql - ERRORES SINTÁCTICOS
+================================================================================
+
+[ ] LÍNEA 18 - VistaControlCato
+    FROM: SELECTid_cato, MAX(fecha_control) AS Fecha_Control
+    TO:   SELECT id_cato, MAX(fecha_control) AS Fecha_Control
+
+[ ] LÍNEA 28 - VistaControlCatoAux
+    FROM: SELECTc.id_cato, v.Fecha_Control, c.sup_mensura, c.frecuencia...
+    TO:   SELECT c.id_cato, v.Fecha_Control, c.sup_mensura, c.frecuencia...
+
+[ ] LÍNEA 62 - VistaListaCatosTemp (COMPLEJA - MÚLTIPLES CAMBIOS)
+    FROM: SELECTC.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control...
+    TO:   SELECT C.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control...
+
+[ ] LÍNEA 89 - VistaListaCatosTemp2 (COMPLEJA - MÚLTIPLES CAMBIOS)
+    FROM: SELECTC.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control...
+    TO:   SELECT C.id_cato, V.id_fed, V.id_cent, C.id_sind, VA.Fecha_Control...
+
+[ ] LÍNEA 113 - VistaTitular (CRÍTICA - REESCRIBIR COMPLETAMENTE)
+    FROM: CREATE OR REPLACE VIEW VistaTitular AS
+          SELECT c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular, a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codi;
+
+    TO:   CREATE OR REPLACE VIEW VistaTitular AS
+          SELECT c.id_cato, c.id_trf, c.fecha_cambio, c.id_afi_titular,
+                 a.apellido1, a.apellido2, a.nombres, c.tipo_cambio, c.codigo_docu
+          FROM Cambio AS c
+          LEFT JOIN Afiliados AS a ON c.id_afi_titular = a.id_afi;
+
+    VERIFICAR: Columna correcta es "codigo_docu" o "codi_docu" (revisar original SQL Server)
+
+
+ARCHIVO: 04_VIEWS.sql - REFERENCIAS [dbo]
+================================================================================
+
+[ ] BUSCAR & REEMPLAZAR GLOBAL EN 04_VIEWS.sql:
+    FROM: dbo.
+    TO:   (NADA - borrar)
+
+    Líneas afectadas:
+    LÍNEA 19: dbo.ControlCato
+    LÍNEA 29: dbo.ControlCato, dbo.VistaControlCato
+    LÍNEA 39: dbo.RenovacionProgramada0, dbo.RenovacionSolicitudes0
+    LÍNEA 51: dbo.Federaciones, dbo.Centrales, dbo.Sindicatos
+    LÍNEA 65: dbo.Afiliados, dbo.Cato, dbo.VistaOrganizacion, dbo.VistaControlCatoAux, dbo.VistaRenovNoDestruidas
+    LÍNEA 78: dbo.TramHojaDeRutaRenov
+    LÍNEA 92: dbo.Afiliados, dbo.Cato, dbo.VistaOrganizacion, dbo.VistaControlCatoAux, dbo.VistaRenovNoDestruidas2
+    LÍNEA 105: dbo.VistaListaCatosTemp2, dbo.Observados
+    LÍNEA 120: dbo.Cambio, dbo.Afiliados
+
+    RESULT: Todas las referencias dbo.XYZ → XYZ
+
+
+ARCHIVO: 04_VIEWS.sql - ISNULL() → COALESCE()
+================================================================================
+
+[ ] LÍNEA 62 - VistaListaCatosTemp
+    ISNULL(A.apellido1, '') → COALESCE(A.apellido1, '')
+    ISNULL(A.apellido2, '') → COALESCE(A.apellido2, '')
+    ISNULL(A.nombres, '') → COALESCE(A.nombres, '')
+    ISNULL(A.ext, '') → COALESCE(A.ext, '')
+
+[ ] LÍNEA 89 - VistaListaCatosTemp2
+    ISNULL(A.apellido1, '') → COALESCE(A.apellido1, '')
+    ISNULL(A.apellido2, '') → COALESCE(A.apellido2, '')
+    ISNULL(A.nombres, '') → COALESCE(A.nombres, '')
+    ISNULL(A.ext, '') → COALESCE(A.ext, '')
+    ISNULL(A.ext, '') → COALESCE(A.ext, '')
+
+    NOTA: Usar Find & Replace: ISNULL( → COALESCE(
+
+
+ARCHIVO: 04_VIEWS.sql - CONCATENACIÓN + → ||
+================================================================================
+
+[ ] LÍNEA 62-63 - VistaListaCatosTemp
+    FROM: ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE
+    TO:   COALESCE(A.apellido1, '') || ' ' || COALESCE(A.apellido2, '') || ' ' || COALESCE(A.nombres, '') AS NOMBRE
+
+[ ] LÍNEA 63 - VistaListaCatosTemp
+    FROM: A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI
+    TO:   A.id_afi || ' - ' || COALESCE(A.ext, '') AS CI
+
+[ ] LÍNEA 89-90 - VistaListaCatosTemp2
+    FROM: ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ' ' + ISNULL(A.nombres, '') AS NOMBRE
+    TO:   COALESCE(A.apellido1, '') || ' ' || COALESCE(A.apellido2, '') || ' ' || COALESCE(A.nombres, '') AS NOMBRE
+
+[ ] LÍNEA 90 - VistaListaCatosTemp2
+    FROM: A.id_afi + ' - ' + ISNULL(A.ext, '') AS CI
+    TO:   A.id_afi || ' - ' || COALESCE(A.ext, '') AS CI
+
+    NOTA: Usar Find & Replace CUIDADOSAMENTE:
+    ' ' + ISNULL( → ' ' || COALESCE(
+    ) + ' ' + → ) || ' ' ||
+
+
+ARCHIVO: 01_TABLAS.sql - PRIMARY KEYS FALTANTES (CREAR NUEVO: 02b_PRIMARY_KEYS.sql)
+================================================================================
+
+[ ] CREAR NUEVO ARCHIVO: 02b_PRIMARY_KEYS.sql
+
+[ ] Agregar:
+    -- RenovacionSolicitudes0
+    ALTER TABLE RenovacionSolicitudes0 ADD PRIMARY KEY (nro_solicitud);
+
+[ ] Agregar:
+    -- Bitacora
+    ALTER TABLE Bitacora ADD CONSTRAINT pk_bitacora PRIMARY KEY (id);
+    -- O alterar definición de columna:
+    -- ALTER TABLE Bitacora ALTER COLUMN id SET DEFAULT nextval('bitacora_id_seq');
+    -- ALTER TABLE Bitacora ADD CONSTRAINT pk_bitacora PRIMARY KEY (id);
+
+[ ] Agregar:
+    -- ControlCatoBitacora
+    ALTER TABLE ControlCatoBitacora ADD CONSTRAINT pk_controlcato_bi PRIMARY KEY (id_cont);
+
+[ ] Agregar:
+    -- ObservadosBi
+    ALTER TABLE ObservadosBi ADD CONSTRAINT pk_observados_bi PRIMARY KEY (id_obs);
+    -- Nota: Cambiar id_obs a BIGSERIAL primero si es necesario
+
+[ ] Agregar:
+    -- Usuarios
+    ALTER TABLE Usuarios ADD CONSTRAINT pk_usuarios PRIMARY KEY (id_usr);
+    -- Nota: Cambiar id_usr a BIGSERIAL primero
+
+[ ] Agregar:
+    -- Tecnicos (usar como PK)
+    ALTER TABLE Tecnicos ADD CONSTRAINT pk_tecnicos PRIMARY KEY (tec_id);
+
+[ ] Agregar:
+    -- TecnicosObs
+    ALTER TABLE TecnicosObs ADD CONSTRAINT pk_tecnicosobs PRIMARY KEY (obs_id);
+    -- Nota: Cambiar obs_id a SERIAL/BIGSERIAL si es necesario
+
+[ ] Agregar:
+    -- TramCite (composite key)
+    ALTER TABLE TramCite ADD CONSTRAINT pk_tramcite PRIMARY KEY (cite, hruta, fecha_cite);
+
+[ ] Agregar:
+    -- TramHojaDeRutaRenovFormDir
+    ALTER TABLE TramHojaDeRutaRenovFormDir ADD CONSTRAINT pk_tramhoja_formdir PRIMARY KEY (id_form);
+    -- Nota: Cambiar id_form a BIGSERIAL primero
+
+[ ] Agregar:
+    -- TramSeguimiento
+    ALTER TABLE TramSeguimiento ADD CONSTRAINT pk_tramseguimiento PRIMARY KEY (id_segui);
+    -- Nota: Cambiar id_segui a BIGSERIAL primero
+
+[ ] REVISAR ORIGINAL SQL SERVER para estas tablas:
+    - TablaAfiliadosAux
+    - TmpListaCatosObs
+    - TmpObsAux
+    - TramHojaDeRutaRenovSolic
+
+    Podrían ser tablas temporales sin PK por diseño.
+    ACCIÓN: Confirmar intención antes de agregar PK
+
+
+ARCHIVO: 01_TABLAS.sql - TIPOS DE DATOS INCORRECTOS
+================================================================================
+
+[ ] LÍNEA 368-385 - TablaAfiliadosAux - Cambiar DOUBLE PRECISION a BIGINT
+    LÍNEA 368: id_fed DOUBLE PRECISION, → id_fed BIGINT,
+    LÍNEA 370: id_cent DOUBLE PRECISION, → id_cent BIGINT,
+    LÍNEA 372: id_sind DOUBLE PRECISION, → id_sind BIGINT,
+    LÍNEA 374: id_cato DOUBLE PRECISION, → id_cato BIGINT,
+
+[ ] LÍNEA 330 - ControlCatoBitacora - Cambiar DOUBLE PRECISION a DECIMAL
+    ACTUAL: sup_mensura DOUBLE PRECISION,
+    TO:     sup_mensura DECIMAL,  -- Para consistencia con ControlCato
+
+
+ARCHIVO: 03_FOREIGN_KEYS.sql - REVISAR ANTES DE ACTIVAR
+================================================================================
+
+ESTADO: 10 FKs COMENTADAS
+
+CRÍTICAS A REVISAR:
+[ ] Línea 36-39: fk_controlcato_renov
+[ ] Línea 73-76: fk_renov_cato ← CRÍTICA
+[ ] Línea 79-82: fk_renov_afiliados ← CRÍTICA
+[ ] Línea 85-88: fk_renov_solicitudes ← CRÍTICA
+[ ] Línea 144-147: fk_tecnicosobs_tecnicos
+[ ] Línea 150-153: fk_tramhojaderutarenov_cato
+[ ] Línea 156-159: fk_tramhojaderutarenov_cato2
+[ ] Línea 162-165: fk_tramhojaderutarenovsolic_cato
+[ ] Línea 168-171: fk_tramhojaderutarenovsolic_formdir
+
+ACCIONES:
+[ ] Revisar datos en CSVs para NULL en columnas FK
+[ ] Para cada FK comentada:
+    - SI no hay NULLs: Descomentar tal cual
+    - SI hay NULLs legítimos: Descomentar con ON DELETE SET NULL
+    - SI hay NULLs pero no son legítimos: Limpiar datos en CSV primero
+
+
+ARCHIVO: 06_VERIFICACION_RAPIDA.sql - CORRECCIONES MENORES
+================================================================================
+
+[ ] LÍNEA 60: Cambiar LIKE a SIMILAR TO
+    FROM: WHERE indexname LIKE '%pkey'
+    TO:   WHERE indexname SIMILAR TO '%pkey'
+
+[ ] LÍNEAS 107-110: Remover o comentar metacomandos psql
+    COMENTAR:
+    -- \d+ Cato
+    -- \d+ RenovacionProgramada0
+    -- \d+ Afiliados
+
+    REEMPLAZAR CON QUERY SQL si necesario:
+    SELECT * FROM information_schema.columns WHERE table_name = 'Cato' ORDER BY ordinal_position;
+
+
+SECUENCIA DE APLICACIÓN RECOMENDADA:
+================================================================================
+
+1. CREAR nuevo archivo 02b_PRIMARY_KEYS.sql con ALTERs de PK faltantes
+   ESFUERZO: 30 minutos
+   VERIFICACIÓN: Contra original SQL Server
+
+2. CORREGIR 04_VIEWS.sql:
+   a) Agregar espacios en SELECT (4 vistas) - 5 minutos
+   b) Remover dbo. de referencias (Find & Replace) - 2 minutos
+   c) Convertir ISNULL a COALESCE (Find & Replace) - 2 minutos
+   d) Convertir + a || (cuidadoso) - 10 minutos
+   e) Reescribir VistaTitular completa - 15 minutos
+   ESFUERZO TOTAL: 30-35 minutos
+
+3. CORREGIR 01_TABLAS.sql:
+   a) Cambiar DOUBLE PRECISION a BIGINT en TablaAfiliadosAux - 3 minutos
+   b) Cambiar DOUBLE PRECISION a DECIMAL en ControlCatoBitacora - 2 minutos
+   ESFUERZO: 5 minutos
+
+4. REVISAR 03_FOREIGN_KEYS.sql:
+   - Validar CSVs para NULL en columnas FK
+   - Descomentar apropiadamente tras validación
+   ESFUERZO: 1-2 horas (depende de datos)
+
+5. CORREGIR 06_VERIFICACION_RAPIDA.sql:
+   - Cambios menores (LIKE → SIMILAR TO, comentar metacomandos)
+   ESFUERZO: 5 minutos
+
+TOTAL: 2 horas (sin validación de datos CSVs)
+
+
+VERIFICACIÓN POST-CORRECCIÓN:
+================================================================================
+
+[ ] Ejecutar 01_TABLAS.sql → Debe crear 26 tablas sin errores
+[ ] Ejecutar 02_INDICES.sql → Debe crear índices sin errores
+[ ] Ejecutar 02b_PRIMARY_KEYS.sql → Debe agregar PKs sin errores
+[ ] Ejecutar 04_VIEWS.sql → Debe crear 10 vistas sin errores
+    - Específicamente: SELECT COUNT(*) FROM VistaOrganizacion LIMIT 5;
+    - Debe retornar datos sin errores de sintaxis
+[ ] Ejecutar 06_VERIFICACION_RAPIDA.sql → Debe reportar 26 tablas y 10 vistas
+
+================================================================================
+Estado del documento: PLANTILLA DE TRABAJO
+Actualización última: 2026-06-30 23:50:00
+================================================================================

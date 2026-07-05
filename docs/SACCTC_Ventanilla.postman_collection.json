@@ -1,0 +1,440 @@
+{
+  "info": {
+    "name": "SACCTC - Area Ventanilla",
+    "description": "API Flask del area Ventanilla (UDESTRO). Ejecutar primero '01 Auth > Login': el token JWT se guarda automaticamente en la variable {{token}} y se aplica a toda la coleccion (Bearer).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "id_afi", "value": "4444444" },
+    { "key": "id_cato", "value": "70001" }
+  ],
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "if (data.access_token) pm.collectionVariables.set('token', data.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login_usr\": \"adminsis\",\n  \"clave_usr\": \"admin2026\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios/login", "host": ["{{baseUrl}}"], "path": ["usuarios", "login"] }
+          }
+        },
+        {
+          "name": "Perfil (me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/usuarios/me", "host": ["{{baseUrl}}"], "path": ["usuarios", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Usuarios (solo ADMINSIS)",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usr\": 7894561,\n  \"nombre_apellido\": \"OPERADOR VENTANILLA\",\n  \"cargo\": \"OPERADOR\",\n  \"login_usr\": \"operador1\",\n  \"clave_usr\": \"Cambiar.2026\",\n  \"tipo\": \"USR_OPERACIONES\",\n  \"estado\": \"VIGENTE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Editar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cargo\": \"OPERADOR SENIOR\",\n  \"estado\": \"VIGENTE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios/operador1", "host": ["{{baseUrl}}"], "path": ["usuarios", "operador1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Afiliados",
+      "item": [
+        {
+          "name": "Buscar (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/afiliados?q=PEREZ&page=1&per_page=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["afiliados"],
+              "query": [
+                { "key": "q", "value": "PEREZ", "description": "CI o nombre" },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/afiliados/{{id_afi}}", "host": ["{{baseUrl}}"], "path": ["afiliados", "{{id_afi}}"] }
+          }
+        },
+        {
+          "name": "Existe (ProcAfiCiExiste)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/afiliados/{{id_afi}}/existe", "host": ["{{baseUrl}}"], "path": ["afiliados", "{{id_afi}}", "existe"] }
+          }
+        },
+        {
+          "name": "Cato vigente (ProcTieneCatoVigenteAfi)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/afiliados/{{id_afi}}/cato-vigente", "host": ["{{baseUrl}}"], "path": ["afiliados", "{{id_afi}}", "cato-vigente"] }
+          }
+        },
+        {
+          "name": "Historial (ProcHistAfi)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/afiliados/{{id_afi}}/historial", "host": ["{{baseUrl}}"], "path": ["afiliados", "{{id_afi}}", "historial"] }
+          }
+        },
+        {
+          "name": "Crear (ProcAfiNuevo)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_afi\": \"9876543\",\n  \"ext\": \"CB\",\n  \"apellido1\": \"GUTIERREZ\",\n  \"apellido2\": \"LOPEZ\",\n  \"nombres\": \"ANA\",\n  \"fecha_nac\": \"1990-05-14\",\n  \"genero\": \"FEMENINO\",\n  \"estado\": \"SIN_CATASTRO\",\n  \"obs\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/afiliados", "host": ["{{baseUrl}}"], "path": ["afiliados"] }
+          }
+        },
+        {
+          "name": "Actualizar (ProcAfiActualizar - registro completo)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_afi\": \"9876543\",\n  \"ext\": \"CB\",\n  \"apellido1\": \"GUTIERREZ\",\n  \"apellido2\": \"LOPEZ\",\n  \"nombres\": \"ANA MARIA\",\n  \"fecha_nac\": \"1990-05-14\",\n  \"genero\": \"FEMENINO\",\n  \"estado\": \"SIN_OBSERVACION\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/afiliados/9876543", "host": ["{{baseUrl}}"], "path": ["afiliados", "9876543"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Catos (catastro)",
+      "item": [
+        {
+          "name": "Listar / buscar",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/catos?id_afi={{id_afi}}&page=1&per_page=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["catos"],
+              "query": [
+                { "key": "id_cato", "value": "", "disabled": true },
+                { "key": "id_afi", "value": "{{id_afi}}" },
+                { "key": "id_sind", "value": "", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle (con titular y flags)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/catos/{{id_cato}}", "host": ["{{baseUrl}}"], "path": ["catos", "{{id_cato}}"] }
+          }
+        },
+        {
+          "name": "Ultimo codigo (ProcGetUltimoCodCato)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/catos/ultimo-codigo/7", "host": ["{{baseUrl}}"], "path": ["catos", "ultimo-codigo", "7"] }
+          }
+        },
+        {
+          "name": "Crear (ProcNewAsigOrg)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_cato\": 70100,\n  \"id_afi\": \"9876543\",\n  \"id_sind\": 1,\n  \"tipo_aut\": \"CATASTRO\",\n  \"descripcion\": \"Asignacion de prueba\",\n  \"fecha_aut\": null,\n  \"solicitud_num\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/catos", "host": ["{{baseUrl}}"], "path": ["catos"] }
+          }
+        },
+        {
+          "name": "Actualizar (ProcUpdateAfiOrg)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_aut\": \"FEDERACION\",\n  \"descripcion\": \"Actualizado desde Postman\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/catos/70100", "host": ["{{baseUrl}}"], "path": ["catos", "70100"] }
+          }
+        },
+        {
+          "name": "Eliminar (ProcDeleteAsigOrg)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/catos/70100", "host": ["{{baseUrl}}"], "path": ["catos", "70100"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Cambios (transferencias)",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/cambios?page=1&per_page=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["cambios"],
+              "query": [
+                { "key": "id_cato", "value": "{{id_cato}}", "disabled": true },
+                { "key": "id_afi", "value": "{{id_afi}}", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial del cato (ProcGetHistorialCambios)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cambios/cato/{{id_cato}}/historial", "host": ["{{baseUrl}}"], "path": ["cambios", "cato", "{{id_cato}}", "historial"] }
+          }
+        },
+        {
+          "name": "Primer titular (ProcGetIdAfi_Comprador)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cambios/cato/{{id_cato}}/primer-titular", "host": ["{{baseUrl}}"], "path": ["cambios", "cato", "{{id_cato}}", "primer-titular"] }
+          }
+        },
+        {
+          "name": "Registrar (ProcNewCambio - transaccional)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_cato\": {{id_cato}},\n  \"id_afi_titular\": \"{{id_afi}}\",\n  \"id_afi_nuevo\": \"9876543\",\n  \"tipo_cambio\": \"COMPRA-VENTA\",\n  \"fecha_cambio\": \"2026-07-02\",\n  \"codigo_docu\": \"DOC-2026-001\",\n  \"obs\": null,\n  \"resol_nro\": null,\n  \"resol_fecha\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/cambios", "host": ["{{baseUrl}}"], "path": ["cambios"] }
+          }
+        },
+        {
+          "name": "Actualizar (ProcUpdateCambio)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"obs\": \"Observacion corregida\",\n  \"codigo_docu\": \"DOC-2026-001-B\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/cambios/1", "host": ["{{baseUrl}}"], "path": ["cambios", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar ultimo (ProcDeleteCambio - revierte titular)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/cambios/1", "host": ["{{baseUrl}}"], "path": ["cambios", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Controles tecnicos",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/controles?id_cato={{id_cato}}&page=1&per_page=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["controles"],
+              "query": [
+                { "key": "id_cato", "value": "{{id_cato}}" },
+                { "key": "id_afi", "value": "{{id_afi}}", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Historial del cato (ProcGetControlCato)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/controles/cato/{{id_cato}}", "host": ["{{baseUrl}}"], "path": ["controles", "cato", "{{id_cato}}"] }
+          }
+        },
+        {
+          "name": "Ultimo control (ProcGetUltimoControl)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/controles/cato/{{id_cato}}/ultimo", "host": ["{{baseUrl}}"], "path": ["controles", "cato", "{{id_cato}}", "ultimo"] }
+          }
+        },
+        {
+          "name": "Registrar (ProcControlCato_New)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_cato\": {{id_cato}},\n  \"id_afi\": \"{{id_afi}}\",\n  \"fecha_control\": \"2026-07-02\",\n  \"sup_mensura\": 0.1600,\n  \"frecuencia\": 1,\n  \"num_lote\": 1,\n  \"sup_lote\": 1600,\n  \"coordenadas\": \"17K 0265432 8123456\",\n  \"tecnico\": \"TEC. EJEMPLO\",\n  \"descripcion\": \"Mensura de rutina\",\n  \"edad_anio\": \"2\",\n  \"edad_mes\": \"6\",\n  \"hruta_nro\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/controles", "host": ["{{baseUrl}}"], "path": ["controles"] }
+          }
+        },
+        {
+          "name": "Actualizar (ProcUpdateControlCato)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sup_mensura\": 0.2500,\n  \"descripcion\": \"Mensura corregida\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/controles/1", "host": ["{{baseUrl}}"], "path": ["controles", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar (ProcDeleteControlCato)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/controles/1", "host": ["{{baseUrl}}"], "path": ["controles", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Organizacion sindical",
+      "item": [
+        {
+          "name": "Federaciones",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/org/federaciones", "host": ["{{baseUrl}}"], "path": ["org", "federaciones"] }
+          }
+        },
+        {
+          "name": "Centrales de una federacion",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/org/federaciones/1/centrales", "host": ["{{baseUrl}}"], "path": ["org", "federaciones", "1", "centrales"] }
+          }
+        },
+        {
+          "name": "Sindicatos de una central",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/org/centrales/1/sindicatos", "host": ["{{baseUrl}}"], "path": ["org", "centrales", "1", "sindicatos"] }
+          }
+        },
+        {
+          "name": "Sindicato (con jerarquia)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/org/sindicatos/1", "host": ["{{baseUrl}}"], "path": ["org", "sindicatos", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Reportes PDF",
+      "item": [
+        {
+          "name": "Ficha del afiliado",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reportes/afiliado/{{id_afi}}", "host": ["{{baseUrl}}"], "path": ["reportes", "afiliado", "{{id_afi}}"] }
+          }
+        },
+        {
+          "name": "Historial del cato",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reportes/cato/{{id_cato}}/historial", "host": ["{{baseUrl}}"], "path": ["reportes", "cato", "{{id_cato}}", "historial"] }
+          }
+        },
+        {
+          "name": "Controles del cato",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reportes/cato/{{id_cato}}/controles", "host": ["{{baseUrl}}"], "path": ["reportes", "cato", "{{id_cato}}", "controles"] }
+          }
+        }
+      ]
+    }
+  ]
+}

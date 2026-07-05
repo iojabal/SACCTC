@@ -1,0 +1,215 @@
+================================================================================
+GUÍA DE INSTALACIÓN: Conversión DDL de SQL Server a PostgreSQL 14+
+PROYECTO: BDUDESTRO
+================================================================================
+
+ARCHIVOS GENERADOS:
+================================================================================
+
+1. 01_TABLAS.sql (15.49 KB)
+   - Contiene 26 CREATE TABLE statements
+   - Conversión completa de tipos de datos de SQL Server a PostgreSQL
+   - IMPORTANTE: nro_solicitud en RenovacionSolicitudes0 es PK
+
+2. 02_INDICES.sql (1.59 KB)
+   - Template con ejemplos de índices recomendados
+   - Descomentar o modificar según necesidad de performance
+
+3. 03_FOREIGN_KEYS.sql (5.7 KB)
+   - 19 relaciones de clave externa definidas
+   - Algunas comentadas por precaución (manejo de NULLs)
+   - Revisar integridad de datos antes de usar
+
+4. 04_VIEWS.sql (7 KB)
+   - 10 vistas convertidas desde SQL Server
+   - IMPORTANTE: Revisar ISNULL() y concatenación de strings
+   - Algunas necesitan ajustes manuales (ver notas abajo)
+
+5. 05_PROCEDURES.sql (2.33 KB)
+   - Template para conversión de stored procedures
+   - Requiere conversión manual de T-SQL a PL/pgSQL
+
+INSTRUCCIONES DE INSTALACIÓN:
+================================================================================
+
+PASO 1: Crear base de datos vacía en PostgreSQL
+-----------------------------------------------
+psql -U postgres -c "CREATE DATABASE bdudestro ENCODING 'UTF8';"
+
+
+PASO 2: Crear extensión PostGIS (si se necesitan geometries)
+------------------------------------------------------------
+psql -U postgres -d bdudestro -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -U postgres -d bdudestro -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+
+
+PASO 3: Ejecutar scripts en orden
+----------------------------------
+
+a) Crear todas las tablas:
+   psql -U postgres -d bdudestro -f 01_TABLAS.sql
+
+b) Crear índices (opcional):
+   psql -U postgres -d bdudestro -f 02_INDICES.sql
+
+c) Crear relaciones de clave externa:
+   psql -U postgres -d bdudestro -f 03_FOREIGN_KEYS.sql
+
+d) Crear vistas:
+   psql -U postgres -d bdudestro -f 04_VIEWS.sql
+
+e) Procedimientos almacenados (después de conversión manual):
+   psql -U postgres -d bdudestro -f 05_PROCEDURES.sql
+
+
+PASO 4: Verificar instalación
+------------------------------
+psql -U postgres -d bdudestro -c "\dt"        # Listar todas las tablas
+psql -U postgres -d bdudestro -c "\dv"        # Listar todas las vistas
+psql -U postgres -d bdudestro -c "\d+"        # Mostrar detalles de estructura
+
+
+CONVERSIONES REALIZADAS:
+================================================================================
+
+TIPOS DE DATOS:
+  SQL Server                  PostgreSQL
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BIGINT IDENTITY(1,1)  →     BIGSERIAL PRIMARY KEY
+  INT IDENTITY(1,1)     →     SERIAL PRIMARY KEY
+  BIGINT                →     BIGINT
+  INT                   →     INTEGER
+  SMALLINT              →     SMALLINT
+  TINYINT               →     SMALLINT
+  VARCHAR(N)            →     VARCHAR(N)
+  VARCHAR(MAX)          →     TEXT
+  NVARCHAR(N)           →     VARCHAR(N)
+  NVARCHAR(MAX)         →     TEXT
+  NCHAR(N)              →     CHAR(N)
+  CHAR(N)               →     CHAR(N)
+  TEXT                  →     TEXT
+  IMAGE                 →     BYTEA
+  GEOMETRY              →     GEOMETRY (PostGIS required)
+  DATE                  →     DATE
+  DATETIME              →     TIMESTAMP
+  DATETIME2             →     TIMESTAMP
+  DECIMAL(p,s)          →     DECIMAL(p,s)
+  NUMERIC(p,s)          →     NUMERIC(p,s)
+  FLOAT                 →     DOUBLE PRECISION
+  REAL                  →     REAL
+  BIT                   →     BOOLEAN
+
+CLÁUSULAS REMOVIDAS:
+  - WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, ...)
+  - TEXTIMAGE_ON [PRIMARY]
+  - CONSTRAINT ... PRIMARY KEY CLUSTERED
+  - CONSTRAINT ... NONCLUSTERED
+  - [dbo]. prefixes
+  - Square brackets [] alrededor de identificadores
+
+
+PROBLEMAS CONOCIDOS Y SOLUCIONES:
+================================================================================
+
+1. PROBLEMA: Función ISNULL() en vistas
+   UBICACIÓN: 04_VIEWS.sql (varias vistas)
+   SOLUCIÓN: Cambiar ISNULL(col, '') por COALESCE(col, '')
+   EJEMPLO ANTES:
+     ISNULL(A.apellido1, '') + ' ' + ISNULL(A.apellido2, '') + ...
+   EJEMPLO DESPUÉS:
+     COALESCE(A.apellido1, '') || ' ' || COALESCE(A.apellido2, '') || ...
+   NOTA: PostgreSQL no soporta concatenación con +, usar || en su lugar
+
+
+2. PROBLEMA: Vistas con TOP (N) PERCENT
+   UBICACIÓN: VistaListaCatosTemp, VistaListaCatosTemp2
+   SOLUCIÓN: TOP de SQL Server fue removido automáticamente
+   NOTA: Si necesitaba limitar resultados, usar LIMIT en PostgreSQL
+
+
+3. PROBLEMA: RenovacionSolicitudes0 sin PRIMARY KEY explicita
+   UBICACIÓN: 01_TABLAS.sql línea 77
+   SOLUCIÓN: nro_solicitud marcado como PRIMARY KEY (NOT NULL implícito)
+   NOTA: Si hay valores duplicados, la creación fallará
+
+
+4. PROBLEMA: Columnas GEOMETRY
+   UBICACIÓN: ControlCato.geoparcela
+   SOLUCIÓN: Instalar PostGIS extension
+   NOTA: Revisar que los datos sean compatibles con PostGIS
+
+
+5. PROBLEMA: Procedimientos almacenados en T-SQL
+   UBICACIÓN: No incluidos en 01_TABLAS.sql
+   SOLUCIÓN: Conversión manual a PL/pgSQL requerida
+   NOTA: Usar 05_PROCEDURES.sql como template
+
+
+VALIDACIÓN DESPUÉS DE INSTALACIÓN:
+================================================================================
+
+1. Verificar todas las tablas se crearon:
+   SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename;
+
+2. Verificar todas las vistas se crearon:
+   SELECT viewname FROM pg_views WHERE schemaname='public' ORDER BY viewname;
+
+3. Verificar estructura de una tabla:
+   \d+ Afiliados
+
+4. Probar una vista simple:
+   SELECT * FROM VistaOrganizacion LIMIT 5;
+
+5. Verificar relaciones de clave externa:
+   SELECT constraint_name, table_name, column_name, foreign_table_name
+   FROM information_schema.key_column_usage
+   WHERE referenced_table_name IS NOT NULL;
+
+
+PASOS SIGUIENTES:
+================================================================================
+
+1. MIGRACIÓN DE DATOS:
+   - Usar pg_dump/pg_restore para datos de SQL Server
+   - O usar herramienta ETL (DTS, SSIS, Talend, etc.)
+   - Validar conteos de filas en cada tabla
+
+2. PROCEDIMIENTOS ALMACENADOS:
+   - Revisar cada procedure original en SQL Server
+   - Convertir T-SQL a PL/pgSQL manualmente
+   - Probar exhaustivamente con datos reales
+
+3. TRIGGERS:
+   - Convertir triggers de SQL Server a PostgreSQL
+   - Considerar usar eventos en lugar de triggers si es posible
+
+4. PERFORMANCE:
+   - Ejecutar ANALYZE; para actualizar estadísticas
+   - Considerar crear índices adicionales en columnas de búsqueda
+   - Usar EXPLAIN ANALYZE para optimizar queries
+
+5. BACKUP Y SEGURIDAD:
+   - Configurar respaldos regulares
+   - Definir roles y permisos (GRANT/REVOKE)
+   - Habilitar auditoría si es requerido
+
+
+RECURSOS ÚTILES:
+================================================================================
+- PostgreSQL 14 Documentation: https://www.postgresql.org/docs/14/
+- PostGIS Manual: https://postgis.net/docs/
+- PL/pgSQL Guide: https://www.postgresql.org/docs/14/plpgsql.html
+- SQL Migration Guide: https://wiki.postgresql.org/wiki/Appendix_A._SQL_Hacks
+- T-SQL to PostgreSQL: https://wiki.postgresql.org/wiki/SQL_PL
+
+SOPORTE:
+================================================================================
+Para problemas específicos:
+1. Revisar logs de PostgreSQL: /var/log/postgresql/ o Application Event Log
+2. Probar sintaxis en psql interactivo antes de scripts
+3. Usar pg_dump --schema-only para ver DDL generado
+4. Consultar comunidad PostgreSQL: postgresql.org
+
+================================================================================
+FIN DE LA GUÍA
+================================================================================
