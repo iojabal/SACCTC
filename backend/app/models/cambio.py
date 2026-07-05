@@ -11,7 +11,7 @@ TIPOS_CAMBIO = (
 class Cambio(db.Model):
     __tablename__ = 'cambio'
 
-    id_trf = db.Column(BIGINT_PK, primary_key=True)
+    id_trf = db.Column(BIGINT_PK, primary_key=True, autoincrement=True)
     id_cato = db.Column(db.BigInteger, db.ForeignKey('cato.id_cato'), index=True)
     id_afi_titular = db.Column(db.String(50), db.ForeignKey('afiliados.id_afi'), index=True)
     id_afi_nuevo = db.Column(db.String(50), db.ForeignKey('afiliados.id_afi'), index=True)
