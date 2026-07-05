@@ -11,7 +11,10 @@
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT ext, COUNT\\(*\\) FROM afiliados GROUP BY ext ORDER BY COUNT\\(*\\) DESC;\")",
       "Bash(./venv/Scripts/python.exe -m pytest tests -q)",
       "Bash(npx --no-install eslint src/pages/Cambios/CambioForm.jsx)",
-      "Bash(./venv/Scripts/python.exe -m pytest tests/test_endpoints.py::TestCambios -q)"
+      "Bash(./venv/Scripts/python.exe -m pytest tests/test_endpoints.py::TestCambios -q)",
+      "Bash(gh pr create --title 'Autocompletar Cod. Cato al elegir titular por buscador' --body ' *)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
+      "Bash(npm run *)"
     ]
   }
 }

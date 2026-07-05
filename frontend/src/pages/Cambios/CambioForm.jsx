@@ -39,6 +39,10 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
   const [errores, setErrores] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [selector, setSelector] = useState(null); // 'titular' | 'nuevo' | null
+  // Recuerda el ultimo selector no nulo para que el titulo del modal no
+  // "parpadee" a su valor por defecto durante la transicion de cierre del
+  // Dialog (selector ya es null pero el modal sigue montado un instante).
+  const [ultimoSelector, setUltimoSelector] = useState(null);
   // Datos del afiliado titular/nuevo para confirmacion visual (o null)
   const [infoTitular, setInfoTitular] = useState(null);
   const [infoNuevo, setInfoNuevo] = useState(null);
@@ -188,7 +192,7 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
   const botonBuscar = (destino) => (
     <InputAdornment position="end">
       <Tooltip title="Buscar afiliado">
-        <IconButton size="small" onClick={() => setSelector(destino)}>
+        <IconButton size="small" onClick={() => { setSelector(destino); setUltimoSelector(destino); }}>
           <PersonSearchIcon fontSize="small" />
         </IconButton>
       </Tooltip>
@@ -319,7 +323,7 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
 
       <AfiliadoSelector
         abierto={selector !== null}
-        titulo={selector === 'titular' ? 'Buscar Titular' : 'Buscar Nuevo Afiliado'}
+        titulo={ultimoSelector === 'titular' ? 'Buscar Titular' : 'Buscar Nuevo Afiliado'}
         onCerrar={() => setSelector(null)}
         onSeleccionar={(a) => {
           setForm((f) => ({
