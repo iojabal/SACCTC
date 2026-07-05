@@ -14,7 +14,8 @@
       "Bash(./venv/Scripts/python.exe -m pytest tests/test_endpoints.py::TestCambios -q)",
       "Bash(gh pr create --title 'Autocompletar Cod. Cato al elegir titular por buscador' --body ' *)",
       "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "PowerShell(winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements 2>&1)"
     ]
   }
 }
