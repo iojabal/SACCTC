@@ -72,6 +72,22 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
     }
   };
 
+  // Busca el cato vigente de una CI y completa "Cod. Cato" (solo si esta
+  // vacio). Se usa tanto al tipear (onBlur) como al elegir por el buscador.
+  const autocompletarCatoDesde = async (ci) => {
+    if (esEdicion || form.id_cato) return;
+    try {
+      const r = await afiliadosApi.catoVigente(ci);
+      if (r.tiene_cato && r.id_cato) {
+        setForm((f) => (f.id_cato ? f : { ...f, id_cato: String(r.id_cato) }));
+      } else {
+        error(`El afiliado ${ci} no tiene cato vigente`);
+      }
+    } catch {
+      // el servidor validara al guardar
+    }
+  };
+
   // Al ingresar la CI del titular: autocompleta su cato vigente (flujo inverso)
   // y muestra sus datos (nombre/estado) para confirmacion visual del funcionario.
   const cargarCatoVigente = async () => {
@@ -85,18 +101,7 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
       error(`No existe el afiliado ${form.id_afi_titular}`);
       return;
     }
-    // Cato vigente (solo si el campo cato aun esta vacio)
-    if (form.id_cato) return;
-    try {
-      const r = await afiliadosApi.catoVigente(form.id_afi_titular);
-      if (r.tiene_cato && r.id_cato) {
-        setForm((f) => (f.id_cato ? f : { ...f, id_cato: String(r.id_cato) }));
-      } else {
-        error(`El afiliado ${form.id_afi_titular} no tiene cato vigente`);
-      }
-    } catch {
-      // el servidor validara al guardar
-    }
+    autocompletarCatoDesde(form.id_afi_titular);
   };
 
   // Al ingresar la CI del comprador: si existe muestra sus datos; si no existe,
@@ -325,6 +330,7 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
           // desactivar el alta inline
           if (selector === 'titular') {
             setInfoTitular(a);
+            autocompletarCatoDesde(a.id_afi);
           } else {
             setInfoNuevo(a);
             setNuevoEsAlta(false);
