@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SquareFootIcon from '@mui/icons-material/SquareFoot';
 import DataTable from '../../components/DataTable';
 import AfiliadoForm from './AfiliadoForm';
 import * as afiliadosApi from '../../services/afiliadosApi';
@@ -19,12 +20,27 @@ import { useNotification } from '../../contexts/NotificationContext';
 import { mensajeDeError } from '../../services/api';
 import { formatearFecha, formatearCI, textoODefecto } from '../../utils/formatters';
 
-const COLS_CATOS = [
+// Grid legacy "Afiliaciones Registradas" (Cato JOIN Sindicatos/Centrales/
+// Federaciones); boton "Ir a Reg. Mensura" navega a pagina separada
+const colsCatos = (navigate) => [
   { id: 'id_cato', etiqueta: 'Cod. Cato' },
-  { id: 'federacion', etiqueta: 'Federacion' },
-  { id: 'central', etiqueta: 'Central' },
-  { id: 'sindicato', etiqueta: 'Sindicato' },
-  { id: 'tipo_aut', etiqueta: 'Tipo Aut.' },
+  { id: 'federacion', etiqueta: 'Federacion', render: (f) => textoODefecto(f.federacion) },
+  { id: 'central', etiqueta: 'Central', render: (f) => textoODefecto(f.central) },
+  { id: 'id_sind', etiqueta: 'Cod. Sind.', align: 'right' },
+  { id: 'sindicato', etiqueta: 'Sindicato', render: (f) => textoODefecto(f.sindicato) },
+  { id: 'tipo_aut', etiqueta: 'Tipo Aut.', render: (f) => textoODefecto(f.tipo_aut) },
+  { id: 'solicitud_num', etiqueta: 'Nro. Solicitud', render: (f) => textoODefecto(f.solicitud_num) },
+  { id: 'nombre_usr', etiqueta: 'Usuario', render: (f) => textoODefecto(f.nombre_usr) },
+  { id: 'descripcion', etiqueta: 'Descripcion', render: (f) => textoODefecto(f.descripcion) },
+  {
+    id: 'acciones', etiqueta: '', align: 'right',
+    render: (f) => (
+      <Button size="small" variant="outlined" startIcon={<SquareFootIcon />}
+        onClick={(e) => { e.stopPropagation(); navigate(`/reg-mensura/${f.id_cato}`); }}>
+        Ir a Reg. Mensura
+      </Button>
+    ),
+  },
 ];
 
 const COLS_HISTORIAL = [
@@ -51,6 +67,7 @@ export default function AfiliadoDetail() {
   const { puedeEscribir } = useAuth();
   const { error } = useNotification();
   const [afiliado, setAfiliado] = useState(null);
+  const [catos, setCatos] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState(false);
@@ -58,11 +75,13 @@ export default function AfiliadoDetail() {
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      const [datos, hist] = await Promise.all([
+      const [datos, afiliaciones, hist] = await Promise.all([
         afiliadosApi.obtenerAfiliado(idAfi),
+        afiliadosApi.catosDeAfiliado(idAfi),
         afiliadosApi.historialAfiliado(idAfi),
       ]);
       setAfiliado(datos);
+      setCatos(afiliaciones.items || []);
       setHistorial(hist);
     } catch (e) {
       error(mensajeDeError(e));
@@ -124,8 +143,10 @@ export default function AfiliadoDetail() {
         </Grid>
       </Paper>
 
-      <Typography variant="h6" gutterBottom>Catos registrados</Typography>
-      <DataTable columnas={COLS_CATOS} datos={afiliado.catos}
+      <Typography variant="h6" gutterBottom>
+        Afiliaciones Registradas ({catos.length})
+      </Typography>
+      <DataTable columnas={colsCatos(navigate)} datos={catos}
         onRowClick={(f) => navigate(`/catos/${f.id_cato}`)}
         vacio="El afiliado no tiene catos registrados" />
 

@@ -15,8 +15,15 @@ from app.middleware.validators import (
 from app.services import validaciones
 
 
-def buscar_afiliados(criterio=None, page=1, per_page=25):
-    """Busqueda paginada por CI o nombre (parametrizada, indices trigram)."""
+def buscar_afiliados(criterio=None, page=1, per_page=25, tiene_cato=None):
+    """Busqueda paginada por CI o nombre (parametrizada, indices trigram).
+
+    Args:
+        criterio: Filtro por CI o nombre (opcional)
+        page: Número de página (default 1)
+        per_page: Registros por página (default 25, max 100)
+        tiene_cato: None (sin filtro) | True (solo con cato) | False (solo sin cato)
+    """
     query = Afiliado.query
     criterio = limpiar(criterio)
     if criterio:
@@ -27,14 +34,37 @@ def buscar_afiliados(criterio=None, page=1, per_page=25):
             Afiliado.id_afi.ilike(like),
             nombre_completo.ilike(like),
         ))
-    paginado = query.order_by(Afiliado.apellido1, Afiliado.apellido2,
-                              Afiliado.nombres).paginate(
-        page=page, per_page=min(per_page, 100), error_out=False)
+
+    # Ordenar y paginar
+    query = query.order_by(Afiliado.apellido1, Afiliado.apellido2,
+                           Afiliado.nombres)
+
+    # Si hay filtro de cato, aplicar en cliente (después de paginar para performance)
+    if tiene_cato is not None:
+        # Obtener todos los resultados sin paginar, filtrar, y luego paginar
+        todos = query.all()
+        afiliados_filtrados = [
+            a for a in todos
+            if validaciones.tiene_cato_vigente(a.id_afi) == tiene_cato
+        ]
+        # Simular paginación manual
+        total = len(afiliados_filtrados)
+        start = (page - 1) * per_page
+        end = start + per_page
+        items = afiliados_filtrados[start:end]
+        pages = (total + per_page - 1) // per_page
+    else:
+        paginado = query.paginate(page=page, per_page=min(per_page, 100),
+                                  error_out=False)
+        total = paginado.total
+        items = paginado.items
+        pages = paginado.pages
+
     return {
-        'items': [a.to_dict() for a in paginado.items],
-        'total': paginado.total,
-        'page': paginado.page,
-        'pages': paginado.pages,
+        'items': [a.to_dict() for a in items],
+        'total': total,
+        'page': page,
+        'pages': pages,
     }
 
 
@@ -50,6 +80,22 @@ def obtener_afiliado(id_afi):
     data['observaciones_pendientes'] = Observado.query.filter_by(
         id_afi=id_afi, aclarado='NO').count()
     return data
+
+
+def catos_de_afiliado(id_afi):
+    """Grid 'Afiliaciones Registradas': catos del afiliado con su
+    organizacion sindical (Sindicato -> Central -> Federacion)."""
+    afiliado = Afiliado.query.filter_by(id_afi=id_afi).first()
+    if afiliado is None:
+        return None
+    catos = Cato.query.filter_by(id_afi=id_afi)\
+        .order_by(Cato.id_cato.asc()).all()
+    return {
+        'id_afi': id_afi,
+        'nombre_completo': afiliado.nombre_completo,
+        'total': len(catos),
+        'items': [c.to_dict(incluir_org=True) for c in catos],
+    }
 
 
 def _validar_datos(data, requiere_ci=True):

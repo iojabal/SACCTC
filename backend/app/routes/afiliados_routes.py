@@ -14,14 +14,20 @@ afiliados_bp = Blueprint('afiliados', __name__, url_prefix='/api/afiliados')
 @afiliados_bp.route('', methods=['GET'])
 @requiere_roles(*ROLES_VENTANILLA_LECTURA)
 def buscar():
-    """Busqueda paginada por CI o nombre. ?q=&page=&per_page="""
+    """Busqueda paginada por CI o nombre. ?q=&page=&per_page=&tiene_cato="""
     try:
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 25))
     except ValueError:
         return jsonify({'error': 'page/per_page invalidos'}), 400
+    # Filtro opcional: tiene_cato=true|false (null = sin filtro)
+    tiene_cato_str = request.args.get('tiene_cato')
+    tiene_cato = None
+    if tiene_cato_str:
+        tiene_cato = tiene_cato_str.lower() == 'true'
     resultado = afiliados_service.buscar_afiliados(
-        criterio=request.args.get('q'), page=page, per_page=per_page)
+        criterio=request.args.get('q'), page=page, per_page=per_page,
+        tiene_cato=tiene_cato)
     return jsonify(resultado)
 
 
@@ -30,6 +36,17 @@ def buscar():
 def detalle(id_afi):
     """ProcAfiGetDatos + catos + observaciones."""
     data = afiliados_service.obtener_afiliado(id_afi)
+    if data is None:
+        return jsonify({'error': f'No existe el afiliado {id_afi}'}), 404
+    return jsonify(data)
+
+
+@afiliados_bp.route('/<id_afi>/catos', methods=['GET'])
+@requiere_roles(*ROLES_VENTANILLA_LECTURA)
+def catos(id_afi):
+    """Grid 'Afiliaciones Registradas' (Cato JOIN Sindicatos/Centrales/
+    Federaciones) del detalle de afiliado legacy."""
+    data = afiliados_service.catos_de_afiliado(id_afi)
     if data is None:
         return jsonify({'error': f'No existe el afiliado {id_afi}'}), 404
     return jsonify(data)

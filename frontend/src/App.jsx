@@ -12,6 +12,7 @@ import Login from './pages/Login';
 import VentanillaHome from './pages/VentanillaHome';
 import AfiliadosList from './pages/Afiliados/AfiliadosList';
 import AfiliadoDetail from './pages/Afiliados/AfiliadoDetail';
+import RegMensuraDetail from './pages/Afiliados/RegMensuraDetail';
 import CambiosList from './pages/Cambios/CambiosList';
 import CatosList from './pages/Catos/CatosList';
 import CatoDetail from './pages/Catos/CatoDetail';
@@ -64,6 +65,8 @@ export default function App() {
                 element={<ConLayout><AfiliadosList /></ConLayout>} />
               <Route path="/afiliados/:idAfi"
                 element={<ConLayout><AfiliadoDetail /></ConLayout>} />
+              <Route path="/reg-mensura/:idCato"
+                element={<ConLayout><RegMensuraDetail /></ConLayout>} />
 
               <Route path="/cambios"
                 element={<ConLayout><CambiosList /></ConLayout>} />

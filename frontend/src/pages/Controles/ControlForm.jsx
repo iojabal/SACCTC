@@ -9,6 +9,7 @@ import {
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import AfiliadoSelector from '../../components/AfiliadoSelector';
 import * as controlCatoApi from '../../services/controlCatoApi';
+import * as mensuraApi from '../../services/mensuraApi';
 import * as catoApi from '../../services/catoApi';
 import { useNotification } from '../../contexts/NotificationContext';
 import { mensajeDeError } from '../../services/api';
@@ -23,7 +24,11 @@ const VACIO = {
   edad_anio: '', edad_mes: '', hruta_nro: '',
 };
 
-export default function ControlForm({ abierto, onCerrar, onGuardado, control, idCatoInicial }) {
+// anidado=true usa los endpoints REST anidados bajo el cato
+// (POST/PUT /api/catos/{id_cato}/controles) del Registro de Mensura.
+export default function ControlForm({
+  abierto, onCerrar, onGuardado, control, idCatoInicial, anidado = false,
+}) {
   const esEdicion = Boolean(control);
   const { exito, error } = useNotification();
   const [form, setForm] = useState(VACIO);
@@ -76,9 +81,16 @@ export default function ControlForm({ abierto, onCerrar, onGuardado, control, id
         num_lote: form.num_lote === '' ? null : Number(form.num_lote),
         sup_lote: form.sup_lote === '' ? null : Number(form.sup_lote),
       };
-      const data = esEdicion
-        ? await controlCatoApi.actualizarControl(control.id_cont, payload)
-        : await controlCatoApi.crearControl(payload);
+      let data;
+      if (esEdicion) {
+        data = anidado
+          ? await mensuraApi.actualizarControl(payload.id_cato, control.id_cont, payload)
+          : await controlCatoApi.actualizarControl(control.id_cont, payload);
+      } else {
+        data = anidado
+          ? await mensuraApi.crearControl(payload.id_cato, payload)
+          : await controlCatoApi.crearControl(payload);
+      }
       exito(esEdicion ? 'Control actualizado'
         : `Control Nro. ${data.control_numero} registrado para el cato ${data.id_cato}`);
       onGuardado?.(data);

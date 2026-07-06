@@ -56,15 +56,20 @@ ROLES_LEGAL_LECTURA = ROLES
 # Gestion legal: informes legales, observaciones y resoluciones administrativas
 ROLES_LEGAL_GESTION = (ROL_ADMINSIS, ROL_LEGAL)
 
-# --- Area Planos -------------------------------------------------------------
+# --- Area Planos / Mensura --------------------------------------------------
 # Lectura: todos los roles vigentes consultan planos
 ROLES_PLANOS_LECTURA = ROLES
 # Gestion de planos: registro, actualizacion y archivo
-# (FormRegistroMensura legacy: USR_ADMINSIS / USR_SISTEMAS / USR_PLANOS)
-ROLES_PLANOS_GESTION = (ROL_ADMINSIS, ROL_PLANOS)
+# (FormRegistroMensura legacy: USR_ADMINSIS / USR_SISTEMAS → USR_OPERACIONES / USR_PLANOS)
+ROLES_PLANOS_GESTION = (ROL_ADMINSIS, ROL_OPERACIONES, ROL_PLANOS)
 # Revision de documentacion tecnica: tambien inspectores
 # (FormRegistroMensura legacy: ... || USR_PLANOS || USR_INSPECCIONES)
-ROLES_PLANOS_REVISION = (ROL_ADMINSIS, ROL_PLANOS, ROL_INSPECCIONES)
+ROLES_PLANOS_REVISION = (ROL_ADMINSIS, ROL_OPERACIONES, ROL_PLANOS, ROL_INSPECCIONES)
+
+# --- Registro de Mensura (FormRegistroMensura) -------------------------------
+# Radio buttons de estado de renovacion (legacy: USR_ADMINSIS || USR_SISTEMAS
+# || USR_PLANOS || USR_INSPECCIONES; USR_SISTEMAS → USR_OPERACIONES)
+ROLES_MENSURA_RENOVACION = (ROL_ADMINSIS, ROL_OPERACIONES, ROL_PLANOS, ROL_INSPECCIONES)
 
 ESTADO_VIGENTE = 'VIGENTE'
 

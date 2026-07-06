@@ -31,8 +31,10 @@ def create_app(config_name='development'):
 
         # En desarrollo crea tablas faltantes; en produccion usar los .sql
         # de /migracion/POSTGRESQL (10_ventanilla_schema.sql, etc.)
-        if app.config.get('DEBUG') or app.config.get('TESTING'):
-            db.create_all()
+        # COMENTADO: Las migrations SQL ya crearon todas las tablas.
+        # Descomenta cuando uses Alembic/Flask-Migrate (no mezclar con SQL puro)
+        # if app.config.get('DEBUG') or app.config.get('TESTING'):
+        #     db.create_all()
 
         # Registrar blueprints del area Ventanilla
         from app.routes import TODOS_BLUEPRINTS

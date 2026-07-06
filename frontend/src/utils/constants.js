@@ -1,7 +1,7 @@
 // Constantes del dominio SACCTC - Area Ventanilla
 
 export const API_BASE_URL =
-  process.env.REACT_APP_API_URL || '/api';
+  process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Roles (Usuarios.tipo)
 export const ROLES = {
@@ -145,6 +145,14 @@ export const ROLES_PLANOS_REVISION = [
   ROLES.ADMINSIS, ROLES.PLANOS, ROLES.INSPECCIONES,
 ];
 
+// --- Registro de Mensura ---
+
+// Radio buttons de estado de renovacion (FormRegistroMensura legacy:
+// USR_ADMINSIS || USR_SISTEMAS (→ USR_OPERACIONES) || USR_PLANOS || USR_INSPECCIONES)
+export const ROLES_MENSURA_RENOVACION = [
+  ROLES.ADMINSIS, ROLES.OPERACIONES, ROLES.PLANOS, ROLES.INSPECCIONES,
+];
+
 export const puedeEscribir = (rol) => ROLES_ESCRITURA.includes(rol);
 export const puedeEliminar = (rol) => ROLES_ELIMINAR.includes(rol);
 export const esAdmin = (rol) => rol === ROLES.ADMINSIS;
@@ -154,5 +162,7 @@ export const puedeRegistrarInforme = (rol) => ROLES_INFORME_TECNICO.includes(rol
 export const puedeRemitirLegal = (rol) => ROLES_REMITIR_LEGAL.includes(rol);
 
 export const puedeGestionarLegal = (rol) => ROLES_LEGAL_GESTION.includes(rol);
+export const puedeGestionarRenovacionMensura = (rol) =>
+  ROLES_MENSURA_RENOVACION.includes(rol);
 export const puedeGestionarPlanos = (rol) => ROLES_PLANOS_GESTION.includes(rol);
 export const puedeRevisarPlano = (rol) => ROLES_PLANOS_REVISION.includes(rol);
