@@ -195,6 +195,31 @@ class TestCambios:
         assert len(historial) == 1
         assert historial[0]['id_afi_nuevo'] == '5555555'
 
+    def test_guarda_fecha_tramite_y_resolucion(self, client, auth_admin):
+        payload = {
+            **self.PAYLOAD,
+            'codigo_docu': 'HR-123',
+            'resol_nro': 'RES-456',
+            'resol_fecha': '2026-07-06',
+        }
+        resp = client.post('/api/cambios', headers=auth_admin, json=payload)
+        data = resp.get_json()
+        assert resp.status_code == 201, data
+        assert data['fecha_cambio'] == '2026-07-01'
+        assert data['codigo_docu'] == 'HR-123'
+        assert data['resol_nro'] == 'RES-456'
+        assert data['resol_fecha'] == '2026-07-06'
+
+    def test_sin_resolucion_guarda_resolucion_vacia(self, client, auth_admin):
+        resp = client.post('/api/cambios', headers=auth_admin,
+                           json={**self.PAYLOAD, 'resol_nro': '',
+                                 'resol_fecha': None})
+        data = resp.get_json()
+        assert resp.status_code == 201, data
+        assert data['fecha_cambio'] == '2026-07-01'
+        assert data['resol_nro'] is None
+        assert data['resol_fecha'] is None
+
     def test_eliminar_revierte_titular(self, client, auth_admin, auth_lector):
         creado = client.post('/api/cambios', headers=auth_admin,
                              json=self.PAYLOAD).get_json()

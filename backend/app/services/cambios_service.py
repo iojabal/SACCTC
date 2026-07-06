@@ -67,8 +67,14 @@ def registrar_cambio(data):
     campos = _validar_datos(data)
 
     errores = []
-    if not validaciones.existe_cato(campos['id_cato']):
+    total_catos = Cato.query.filter_by(id_cato=campos['id_cato']).count()
+    if total_catos == 0:
         errores.append(f"No existe el cato {campos['id_cato']}")
+    elif total_catos > 1:
+        errores.append(
+            f"El cato {campos['id_cato']} esta duplicado en la base de datos "
+            f"({total_catos} registros). No se puede transferir hasta depurar "
+            "ese duplicado")
     if not validaciones.existe_afiliado(campos['id_afi_titular']):
         errores.append(f"No existe el afiliado titular {campos['id_afi_titular']}")
     if not validaciones.existe_afiliado(campos['id_afi_nuevo']):

@@ -39,6 +39,9 @@ export function mensajeDeError(error) {
   const data = error.response?.data;
   if (data?.detalles?.length) return data.detalles.join('. ');
   if (data?.error) return data.error;
+  if (error.response?.status >= 500) {
+    return `Error interno del servidor (${error.response.status}). Revisa los logs del backend`;
+  }
   if (error.message === 'Network Error') return 'Sin conexion con el servidor';
   return 'Error inesperado';
 }

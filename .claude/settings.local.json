@@ -18,7 +18,12 @@
       "PowerShell(winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements 2>&1)",
       "Bash(gh --version)",
       "PowerShell($p = \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\"; if \\(Test-Path $p\\) { & $p --version } else { \"not found at default path\" })",
-      "Bash(tail -c 3000 \"/c/Users/MSI~1/AppData/Local/Temp/claude/C--Users-M-S-I-Documents-UDESTRO/9a526ef6-d7fc-42f7-aea1-677aac0d6ed8/tasks/b2ivhlzwp.output\" 2>&1)"
+      "Bash(tail -c 3000 \"/c/Users/MSI~1/AppData/Local/Temp/claude/C--Users-M-S-I-Documents-UDESTRO/9a526ef6-d7fc-42f7-aea1-677aac0d6ed8/tasks/b2ivhlzwp.output\" 2>&1)",
+      "Bash('/c/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -c ' *)",
+      "Bash('/c/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -v ON_ERROR_STOP=1 -c ' *)",
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/M S I/Documents/UDESTRO/migrations/20260703_01_renovaciones.sql\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/M S I/Documents/UDESTRO/migrations/20260703_02_legal_planos.sql\")"
     ]
   }
 }

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   TextField, MenuItem, Grid, Alert, InputAdornment, IconButton, Tooltip,
-  Chip, Box, Typography, Divider,
+  Chip, Box, Typography, Divider, FormControl, FormControlLabel, FormLabel,
+  Radio, RadioGroup,
 } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -14,7 +15,9 @@ import * as catoApi from '../../services/catoApi';
 import * as afiliadosApi from '../../services/afiliadosApi';
 import { useNotification } from '../../contexts/NotificationContext';
 import { mensajeDeError } from '../../services/api';
-import { TIPOS_CAMBIO, GENEROS, EXTENSIONES_CI } from '../../utils/constants';
+import {
+  CATEGORIAS_CAMBIO, TIPOS_CAMBIO_POR_CATEGORIA, GENEROS, EXTENSIONES_CI,
+} from '../../utils/constants';
 import {
   validarCI, validarRequerido, validarFecha, validarEnteroPositivo, validarTodo,
 } from '../../utils/validators';
@@ -32,6 +35,20 @@ const NUEVO_AFI_VACIO = {
 // Color del chip segun el estado del afiliado
 const colorEstado = (estado) => (estado === 'TRANSFERIDO' ? 'warning' : 'default');
 
+const CATEGORIA_POR_TIPO = Object.entries(TIPOS_CAMBIO_POR_CATEGORIA)
+  .reduce((acc, [categoria, tipos]) => {
+    tipos.forEach((tipo) => { acc[tipo.valor] = categoria; });
+    return acc;
+  }, {});
+
+const categoriaDeTipo = (tipo) =>
+  CATEGORIA_POR_TIPO[tipo] || CATEGORIAS_CAMBIO.TRANSFERENCIA;
+
+const ESTADOS_RESOLUCION = {
+  CON: 'CON_RESOLUCION',
+  SIN: 'SIN_RESOLUCION',
+};
+
 export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
   const esEdicion = Boolean(cambio);
   const { exito, error } = useNotification();
@@ -39,6 +56,8 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
   const [errores, setErrores] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [selector, setSelector] = useState(null); // 'titular' | 'nuevo' | null
+  const [categoriaCambio, setCategoriaCambio] = useState(CATEGORIAS_CAMBIO.TRANSFERENCIA);
+  const [estadoResolucion, setEstadoResolucion] = useState(ESTADOS_RESOLUCION.SIN);
   // Recuerda el ultimo selector no nulo para que el titulo del modal no
   // "parpadee" a su valor por defecto durante la transicion de cierre del
   // Dialog (selector ya es null pero el modal sigue montado un instante).
@@ -52,7 +71,12 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
 
   useEffect(() => {
     if (abierto) {
-      setForm(cambio ? { ...VACIO, ...cambio } : VACIO);
+      const datos = cambio ? { ...VACIO, ...cambio } : VACIO;
+      setForm(datos);
+      setCategoriaCambio(categoriaDeTipo(datos.tipo_cambio));
+      setEstadoResolucion(
+        datos.resol_nro || datos.resol_fecha ? ESTADOS_RESOLUCION.CON : ESTADOS_RESOLUCION.SIN,
+      );
       setErrores([]);
       setInfoTitular(null);
       setInfoNuevo(null);
@@ -64,6 +88,24 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
   const setCampo = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
   const setCampoNuevo = (campo) => (e) =>
     setDatosNuevo((d) => ({ ...d, [campo]: e.target.value }));
+
+  const cambiarCategoria = (e) => {
+    const categoria = e.target.value;
+    const tiposCategoria = TIPOS_CAMBIO_POR_CATEGORIA[categoria].map((t) => t.valor);
+    setCategoriaCambio(categoria);
+    setForm((f) => ({
+      ...f,
+      tipo_cambio: tiposCategoria.includes(f.tipo_cambio) ? f.tipo_cambio : '',
+    }));
+  };
+
+  const cambiarEstadoResolucion = (e) => {
+    const estado = e.target.value;
+    setEstadoResolucion(estado);
+    if (estado === ESTADOS_RESOLUCION.SIN) {
+      setForm((f) => ({ ...f, resol_nro: '', resol_fecha: '' }));
+    }
+  };
 
   // Al ingresar el cato, autocompleta el titular actual (comportamiento legacy)
   const cargarTitular = async () => {
@@ -134,7 +176,11 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
       validarCI(form.id_afi_titular),
       validarCI(form.id_afi_nuevo),
       validarRequerido(form.tipo_cambio, 'Tipo de cambio'),
-      validarFecha(form.fecha_cambio, 'Fecha del cambio', true),
+      validarFecha(form.fecha_cambio, 'Fecha de tramite', true),
+      estadoResolucion === ESTADOS_RESOLUCION.CON
+        ? validarRequerido(form.resol_nro, 'Nro. Resolucion') : null,
+      estadoResolucion === ESTADOS_RESOLUCION.CON
+        ? validarFecha(form.resol_fecha, 'Fecha Resolucion', true) : null,
       form.id_afi_titular && form.id_afi_titular === form.id_afi_nuevo
         ? 'El titular y el nuevo afiliado no pueden ser el mismo' : null,
       // Si el comprador es nuevo, exigir al menos un nombre/apellido
@@ -162,7 +208,10 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
         ...form,
         id_cato: Number(form.id_cato),
         fecha_cambio: form.fecha_cambio,
-        resol_fecha: form.resol_fecha || null,
+        resol_nro: estadoResolucion === ESTADOS_RESOLUCION.CON ? form.resol_nro : '',
+        resol_fecha: estadoResolucion === ESTADOS_RESOLUCION.CON
+          ? form.resol_fecha || null
+          : null,
       };
       const data = esEdicion
         ? await cambiosApi.actualizarCambio(cambio.id_trf, payload)
@@ -214,9 +263,22 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
                 onBlur={cargarTitular} disabled={esEdicion} />
             </Grid>
             <Grid item xs={6}>
+              <FormControl size="small" fullWidth>
+                <FormLabel sx={{ fontSize: 12 }}>Operación</FormLabel>
+                <RadioGroup row value={categoriaCambio} onChange={cambiarCategoria}>
+                  <FormControlLabel value={CATEGORIAS_CAMBIO.TRANSFERENCIA}
+                    control={<Radio size="small" />} label="Transferencia" />
+                  <FormControlLabel value={CATEGORIAS_CAMBIO.REASIGNACION}
+                    control={<Radio size="small" />} label="Reasignación" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6}>
               <TextField select fullWidth size="small" label="Tipo de cambio *"
                 value={form.tipo_cambio || ''} onChange={setCampo('tipo_cambio')}>
-                {TIPOS_CAMBIO.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                {TIPOS_CAMBIO_POR_CATEGORIA[categoriaCambio].map((t) => (
+                  <MenuItem key={t.valor} value={t.valor}>{t.etiqueta}</MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid item xs={6}>
@@ -290,7 +352,7 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
               </>
             )}
             <Grid item xs={6}>
-              <TextField fullWidth size="small" label="Fecha del cambio *" type="date"
+              <TextField fullWidth size="small" label="Fecha de tramite *" type="date"
                 InputLabelProps={{ shrink: true }} value={form.fecha_cambio || ''}
                 onChange={setCampo('fecha_cambio')} />
             </Grid>
@@ -298,14 +360,27 @@ export default function CambioForm({ abierto, onCerrar, onGuardado, cambio }) {
               <TextField fullWidth size="small" label="Codigo documento"
                 value={form.codigo_docu || ''} onChange={setCampo('codigo_docu')} />
             </Grid>
+            <Grid item xs={12}>
+              <FormControl size="small">
+                <FormLabel sx={{ fontSize: 12 }}>Resolucion</FormLabel>
+                <RadioGroup row value={estadoResolucion} onChange={cambiarEstadoResolucion}>
+                  <FormControlLabel value={ESTADOS_RESOLUCION.CON}
+                    control={<Radio size="small" />} label="Con Resolucion" />
+                  <FormControlLabel value={ESTADOS_RESOLUCION.SIN}
+                    control={<Radio size="small" />} label="Sin Resolucion" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
             <Grid item xs={6}>
               <TextField fullWidth size="small" label="Nro. Resolucion"
-                value={form.resol_nro || ''} onChange={setCampo('resol_nro')} />
+                value={form.resol_nro || ''} onChange={setCampo('resol_nro')}
+                disabled={estadoResolucion === ESTADOS_RESOLUCION.SIN} />
             </Grid>
             <Grid item xs={6}>
               <TextField fullWidth size="small" label="Fecha Resolucion" type="date"
                 InputLabelProps={{ shrink: true }} value={form.resol_fecha || ''}
-                onChange={setCampo('resol_fecha')} />
+                onChange={setCampo('resol_fecha')}
+                disabled={estadoResolucion === ESTADOS_RESOLUCION.SIN} />
             </Grid>
             <Grid item xs={12}>
               <TextField fullWidth size="small" label="Observaciones" multiline rows={2}

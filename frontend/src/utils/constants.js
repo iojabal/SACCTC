@@ -35,10 +35,26 @@ export const TIPOS_AUT_CATO = [
   'NINGUNA', 'ADICIONAL_LEY906',
 ];
 
-export const TIPOS_CAMBIO = [
-  'COMPRA-VENTA', 'SUCESION-HEREDITARIA', 'RENUNCIA-VOLUNTARIA',
-  'ABANDONO', 'SENTENCIA-PENAL', 'TRANSFERENCIA', 'REASIGNACION',
-];
+export const CATEGORIAS_CAMBIO = {
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  REASIGNACION: 'REASIGNACION',
+};
+
+export const TIPOS_CAMBIO_POR_CATEGORIA = {
+  [CATEGORIAS_CAMBIO.TRANSFERENCIA]: [
+    { valor: 'COMPRA-VENTA', etiqueta: 'Compra-venta' },
+    { valor: 'SUCESION-HEREDITARIA', etiqueta: 'Sucesión hereditaria' },
+  ],
+  [CATEGORIAS_CAMBIO.REASIGNACION]: [
+    { valor: 'ABANDONO', etiqueta: 'Abandono' },
+    { valor: 'SENTENCIA-PENAL', etiqueta: 'Sentencia-Penal' },
+    { valor: 'RENUNCIA-VOLUNTARIA', etiqueta: 'Renuncia-voluntaria' },
+  ],
+};
+
+export const TIPOS_CAMBIO = Object.values(TIPOS_CAMBIO_POR_CATEGORIA)
+  .flat()
+  .map((t) => t.valor);
 
 export const ESTADOS_TRAMITE = ['EN_PROCESO', 'FINALIZADO'];
 
