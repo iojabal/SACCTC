@@ -76,9 +76,10 @@ def crear():
 @renovaciones_bp.route('/<int:id_renovacion>', methods=['PUT'])
 @requiere_roles(*ROLES_RENOV_GESTION)
 def actualizar(id_renovacion):
-    """ProcRenovUpdateFechaVen: fechas de vigencia."""
+    """ProcRenovUpdate2/ProcRenovUpdateFechaVen: vigencia + datos del
+    formulario del agrimensor (ultimo control, cultivos, causal, etc.)."""
     try:
-        data = renovaciones_service.actualizar_vigencia(
+        data = renovaciones_service.actualizar_renovacion(
             id_renovacion, request.get_json(silent=True) or {},
             usuario_actual())
         return jsonify(data)

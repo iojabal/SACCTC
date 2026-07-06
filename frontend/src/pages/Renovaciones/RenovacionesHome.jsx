@@ -12,7 +12,8 @@ import * as renovacionesApi from '../../services/renovacionesApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { mensajeDeError } from '../../services/api';
-import { formatearCI, formatearFecha } from '../../utils/formatters';
+import { formatearCI } from '../../utils/formatters';
+import { motivosNoElegible } from '../../utils/constants';
 
 export default function RenovacionesHome() {
   const navigate = useNavigate();
@@ -91,20 +92,15 @@ export default function RenovacionesHome() {
           {elegibilidad.elegible ? (
             <Alert severity="success">
               <AlertTitle>Elegible para renovacion</AlertTitle>
-              {elegibilidad.cato_vigente && (
-                <>
-                  Cato vigente: {elegibilidad.cato_vigente.id_cato}
-                  {elegibilidad.cato_vigente.vigencia_fin &&
-                    ` (vigencia hasta ${formatearFecha(elegibilidad.cato_vigente.vigencia_fin)})`}
-                </>
+              {elegibilidad.id_cato_vigente && (
+                <>Cato vigente: {elegibilidad.id_cato_vigente}</>
               )}
             </Alert>
           ) : (
             <Alert severity="warning">
               <AlertTitle>No elegible para renovacion</AlertTitle>
-              {(elegibilidad.motivos || []).length
-                ? elegibilidad.motivos.join('. ')
-                : 'El afiliado no cumple los requisitos para renovar.'}
+              {motivosNoElegible(elegibilidad).join('. ')
+                || 'El afiliado no cumple los requisitos para renovar.'}
             </Alert>
           )}
         </Paper>

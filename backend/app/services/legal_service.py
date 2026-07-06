@@ -204,10 +204,13 @@ def registrar_informe_legal(id_renovacion, data, usuario):
                                  dictamen, contenido, data, usuario)
     db.session.add(actuacion)
 
-    # Sincronizacion legacy (ProcRenovUpdate2: @legal_info_*)
+    # Sincronizacion legacy (ProcRenovUpdate2: @legal_info_* +
+    # Responsable/Cargo de la seccion Asesoria Legal del form legacy)
     renov.legal_info_nro = nro_cite
     renov.legal_info_fecha = fecha
     renov.legal_info_obs = contenido
+    renov.legal_responsable = actuacion.responsable_nombre
+    renov.legal_cargo = actuacion.responsable_cargo
 
     db.session.commit()
     return actuacion.to_dict()
@@ -261,6 +264,7 @@ def emitir_resolucion(id_renovacion, data, usuario):
     db.session.add(actuacion)
 
     # Sincronizacion legacy (ProcRenovUpdate2: @resol_* + @resultado)
+    renov.con_resolucion = True
     renov.resol_nro = nro_cite
     renov.resol_fecha = fecha
     renov.resol_obs = contenido

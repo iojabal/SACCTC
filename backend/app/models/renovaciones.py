@@ -68,33 +68,46 @@ class RenovacionProgramada(db.Model):
     remitida_legal_fecha = db.Column(db.Date)
     remitida_legal_por = db.Column(db.String(50))
 
-    # Parcela ANTERIOR (la que se renueva)
+    # Parcela ANTERIOR (la que se renueva). cato_fecha_control es la fecha
+    # del ultimo control de mensura que origino el snapshot (campo
+    # "FechaControl" del formulario legacy; 20260705_01).
+    cato_fecha_control = db.Column(db.Date)
     cato_sup = db.Column(db.Numeric(8, 4))
     cato_utm_xy = db.Column(db.String(250))
     cato_frec = db.Column(db.Integer)
     cato_edad_anio = db.Column(db.String(150))
     cato_edad_mes = db.Column(db.String(150))
 
-    # Parcela NUEVA (la autorizada)
+    # Parcela NUEVA (la autorizada). renov_edad_anio = "Edad Anios" del
+    # Nuevo Cultivo del formulario legacy (20260705_01).
     renov_sup = db.Column(db.Numeric(8, 4))
     renov_utm_xy = db.Column(db.String(250))
     renov_frec = db.Column(db.Integer)
     renov_edad_mes = db.Column(db.Integer)
+    renov_edad_anio = db.Column(db.Integer)
 
     # Informe tecnico (ultimo, sincronizado desde informevisitatecnica)
+    # tecnico_cargo = "Cargo" del tecnico en la seccion Causal (20260705_01)
     tecnico = db.Column(db.String(50))
+    tecnico_cargo = db.Column(db.String(50))
     tecnico_info_nro = db.Column(db.String(20))
     tecnico_info_fecha = db.Column(db.Date)
     tecnico_info_causal_inciso = db.Column(db.String(5))
     tecnico_info_obs = db.Column(db.Text)
     tecnico_val_fecha = db.Column(db.Date)
 
-    # Informe legal
+    # Informe legal. legal_responsable/legal_cargo = "Responsable"/"Cargo"
+    # de la seccion Asesoria Legal, sincronizados desde ActuacionLegal
+    # (20260705_01).
     legal_info_nro = db.Column(db.String(20))
     legal_info_fecha = db.Column(db.Date)
     legal_info_obs = db.Column(db.Text)
+    legal_responsable = db.Column(db.String(100))
+    legal_cargo = db.Column(db.String(50))
 
-    # Resolucion administrativa
+    # Resolucion administrativa. con_resolucion = radio "Con Resolucion /
+    # Sin Resolucion" del formulario legacy (20260705_01).
+    con_resolucion = db.Column(db.Boolean)
     resol_nro = db.Column(db.String(20))
     resol_fecha = db.Column(db.Date)
     resol_obs = db.Column(db.Text)
@@ -148,6 +161,10 @@ class RenovacionProgramada(db.Model):
             'fecha_vencimiento': self.fecha_vencimiento.isoformat() if self.fecha_vencimiento else None,
             'fecha_destruida': self.fecha_destruida.isoformat() if self.fecha_destruida else None,
             'tecnico_info_nro': self.tecnico_info_nro,
+            'tecnico_info_fecha': self.tecnico_info_fecha.isoformat()
+                if self.tecnico_info_fecha else None,
+            'tecnico_val_fecha': self.tecnico_val_fecha.isoformat()
+                if self.tecnico_val_fecha else None,
             'legal_info_nro': self.legal_info_nro,
             'resol_nro': self.resol_nro,
             'sindicato': self.sindicato,
@@ -162,6 +179,8 @@ class RenovacionProgramada(db.Model):
             'remitida_legal_fecha': self.remitida_legal_fecha.isoformat()
                 if self.remitida_legal_fecha else None,
             'remitida_legal_por': self.remitida_legal_por,
+            'cato_fecha_control': self.cato_fecha_control.isoformat()
+                if self.cato_fecha_control else None,
             'cato_sup': float(self.cato_sup) if self.cato_sup is not None else None,
             'cato_utm_xy': self.cato_utm_xy,
             'cato_frec': self.cato_frec,
@@ -171,7 +190,9 @@ class RenovacionProgramada(db.Model):
             'renov_utm_xy': self.renov_utm_xy,
             'renov_frec': self.renov_frec,
             'renov_edad_mes': self.renov_edad_mes,
+            'renov_edad_anio': self.renov_edad_anio,
             'tecnico': self.tecnico,
+            'tecnico_cargo': self.tecnico_cargo,
             'tecnico_info_fecha': self.tecnico_info_fecha.isoformat()
                 if self.tecnico_info_fecha else None,
             'tecnico_info_causal_inciso': self.tecnico_info_causal_inciso,
@@ -181,10 +202,19 @@ class RenovacionProgramada(db.Model):
             'legal_info_fecha': self.legal_info_fecha.isoformat()
                 if self.legal_info_fecha else None,
             'legal_info_obs': self.legal_info_obs,
+            'legal_responsable': self.legal_responsable,
+            'legal_cargo': self.legal_cargo,
+            'con_resolucion': self.con_resolucion,
             'resol_fecha': self.resol_fecha.isoformat() if self.resol_fecha else None,
             'resol_obs': self.resol_obs,
             'lote_nro': self.lote_nro,
             'lote_sup': self.lote_sup,
+            'edad_mes_nuevo': self.edad_mes_nuevo,
+            'superficie': float(self.superficie)
+                if self.superficie is not None else None,
+            'frecuencia': self.frecuencia,
+            'coordenadas': self.coordenadas,
+            'ant_valoracion': self.ant_valoracion,
             'observacion': self.observacion,
             'usuario_ci': self.usuario_ci,
             'usuario_nombre': self.usuario_nombre,

@@ -60,24 +60,44 @@ export const ESTADOS_TRAMITE = ['EN_PROCESO', 'FINALIZADO'];
 
 // --- Area Renovaciones ---
 
-// Workflow del tramite de renovacion
+// Workflow del tramite de renovacion (backend: models/renovaciones.py)
 export const ESTADOS_RENOVACION = [
-  'REGISTRADA', 'EN_INSPECCION', 'REMITIDA_LEGAL', 'APROBADA', 'RECHAZADA',
+  'PENDIENTE', 'REMITIDA_LEGAL', 'APROBADA', 'RECHAZADA', 'DESTRUIDA',
 ];
 
 // Color del chip MUI por estado de renovacion
 export const COLORES_ESTADO_RENOVACION = {
-  REGISTRADA: 'default',
-  EN_INSPECCION: 'info',
+  PENDIENTE: 'info',
   REMITIDA_LEGAL: 'warning',
   APROBADA: 'success',
   RECHAZADA: 'error',
+  DESTRUIDA: 'default',
 };
 
-// Estados en los que el tramite aun puede editarse / remitirse a Legal
-export const ESTADOS_RENOVACION_EDITABLES = ['REGISTRADA', 'EN_INSPECCION'];
+// Estados en los que el tramite aun puede editarse (activos)
+export const ESTADOS_RENOVACION_EDITABLES = ['PENDIENTE', 'REMITIDA_LEGAL'];
 
-export const RECOMENDACIONES_INFORME = ['FAVORABLE', 'DESFAVORABLE', 'OBSERVADO'];
+// Resultado de la inspeccion de campo (informe de visita tecnica)
+export const RESULTADOS_INFORME = ['FACTIBLE', 'NO_FACTIBLE', 'AUSENTE'];
+
+// Resultado legacy del tramite (solo lectura; lo fija el area Legal)
+export const RESULTADOS_RENOVACION = ['NINGUNO', 'APROBADO', 'RECHAZADO'];
+
+// Causales de renovacion del DS 3318 (incisos a-f)
+export const CAUSALES_RENOVACION = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+// Texto legible para los checks de elegibilidad que devuelve el backend
+export const MOTIVOS_NO_ELEGIBLE = {
+  estado_vigente: 'El afiliado no esta vigente',
+  tiene_cato_vigente: 'El afiliado no tiene un cato vigente',
+  sin_observaciones_pendientes: 'El afiliado tiene observaciones pendientes',
+  sin_renovacion_activa: 'El cato ya tiene una renovacion en curso',
+};
+
+export const motivosNoElegible = (eleg) =>
+  Object.entries(eleg?.checks || {})
+    .filter(([, ok]) => !ok)
+    .map(([check]) => MOTIVOS_NO_ELEGIBLE[check] || check);
 
 // Roles con escritura en Renovaciones (registro y edicion de solicitudes)
 export const ROLES_RENOVACION = [

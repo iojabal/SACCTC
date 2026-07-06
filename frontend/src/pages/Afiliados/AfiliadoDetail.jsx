@@ -10,8 +10,10 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DataTable from '../../components/DataTable';
 import AfiliadoForm from './AfiliadoForm';
+import RenovacionForm from '../Renovaciones/RenovacionForm';
 import * as afiliadosApi from '../../services/afiliadosApi';
 import { descargarRegistroAfiliado } from '../../services/documentosApi';
 import { abrirReporte } from '../../services/usuariosApi';
@@ -21,8 +23,9 @@ import { mensajeDeError } from '../../services/api';
 import { formatearFecha, formatearCI, textoODefecto } from '../../utils/formatters';
 
 // Grid legacy "Afiliaciones Registradas" (Cato JOIN Sindicatos/Centrales/
-// Federaciones); boton "Ir a Reg. Mensura" navega a pagina separada
-const colsCatos = (navigate) => [
+// Federaciones); boton "Ir a Reg. Mensura" navega a pagina separada y
+// "Tramite Renovacion" abre la solicitud de renovacion precargada
+const colsCatos = (navigate, onRenovar) => [
   { id: 'id_cato', etiqueta: 'Cod. Cato' },
   { id: 'federacion', etiqueta: 'Federacion', render: (f) => textoODefecto(f.federacion) },
   { id: 'central', etiqueta: 'Central', render: (f) => textoODefecto(f.central) },
@@ -35,10 +38,16 @@ const colsCatos = (navigate) => [
   {
     id: 'acciones', etiqueta: '', align: 'right',
     render: (f) => (
-      <Button size="small" variant="outlined" startIcon={<SquareFootIcon />}
-        onClick={(e) => { e.stopPropagation(); navigate(`/reg-mensura/${f.id_cato}`); }}>
-        Ir a Reg. Mensura
-      </Button>
+      <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <Button size="small" variant="outlined" startIcon={<SquareFootIcon />}
+          onClick={(e) => { e.stopPropagation(); navigate(`/reg-mensura/${f.id_cato}`); }}>
+          Ir a Reg. Mensura
+        </Button>
+        <Button size="small" variant="outlined" startIcon={<AutorenewIcon />}
+          onClick={(e) => { e.stopPropagation(); onRenovar(f.id_cato); }}>
+          Tramite Renovacion
+        </Button>
+      </Stack>
     ),
   },
 ];
@@ -71,6 +80,9 @@ export default function AfiliadoDetail() {
   const [historial, setHistorial] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState(false);
+  // Valores iniciales para "Tramite Renovacion" ({ id_afi, id_cato } o null);
+  // en estado para mantener identidad estable mientras el dialogo esta abierto
+  const [renovInicial, setRenovInicial] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -146,7 +158,9 @@ export default function AfiliadoDetail() {
       <Typography variant="h6" gutterBottom>
         Afiliaciones Registradas ({catos.length})
       </Typography>
-      <DataTable columnas={colsCatos(navigate)} datos={catos}
+      <DataTable
+        columnas={colsCatos(navigate, (idCato) => setRenovInicial({ id_afi: idAfi, id_cato: idCato }))}
+        datos={catos}
         onRowClick={(f) => navigate(`/catos/${f.id_cato}`)}
         vacio="El afiliado no tiene catos registrados" />
 
@@ -165,6 +179,13 @@ export default function AfiliadoDetail() {
           } else {
             cargar();
           }
+        }} />
+
+      <RenovacionForm abierto={Boolean(renovInicial)} inicial={renovInicial}
+        onCerrar={() => setRenovInicial(null)}
+        onGuardado={(r) => {
+          setRenovInicial(null);
+          if (r?.id) navigate(`/renovaciones/${r.id}`);
         }} />
     </Box>
   );

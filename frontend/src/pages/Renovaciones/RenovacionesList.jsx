@@ -20,19 +20,22 @@ import {
 const COLUMNAS = [
   { id: 'id_renov', etiqueta: 'Nro.', align: 'right' },
   {
-    id: 'fecha_solicitud', etiqueta: 'F. Solicitud',
-    render: (f) => formatearFecha(f.fecha_solicitud),
+    id: 'nro_solicitud', etiqueta: 'H.R. Nro. Sol.',
+    render: (f) => textoODefecto(f.nro_solicitud),
+  },
+  {
+    id: 'hruta_fecha', etiqueta: 'F. Solicitud',
+    render: (f) => formatearFecha(f.hruta_fecha),
   },
   { id: 'id_afi', etiqueta: 'CI Afiliado' },
-  { id: 'afiliado_nombre', etiqueta: 'Afiliado', render: (f) => textoODefecto(f.afiliado_nombre) },
   { id: 'id_cato', etiqueta: 'Cato' },
   {
     id: 'vigencia_inicio', etiqueta: 'Vigencia desde',
     render: (f) => formatearFecha(f.vigencia_inicio),
   },
   {
-    id: 'vigencia_fin', etiqueta: 'Vigencia hasta',
-    render: (f) => formatearFecha(f.vigencia_fin),
+    id: 'fecha_vencimiento', etiqueta: 'Vigencia hasta',
+    render: (f) => formatearFecha(f.fecha_vencimiento),
   },
   {
     id: 'estado', etiqueta: 'Estado',

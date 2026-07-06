@@ -23,7 +23,26 @@
       "Bash('/c/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -v ON_ERROR_STOP=1 -c ' *)",
       "Bash(tasklist //FI \"IMAGENAME eq python.exe\")",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/M S I/Documents/UDESTRO/migrations/20260703_01_renovaciones.sql\")",
-      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/M S I/Documents/UDESTRO/migrations/20260703_02_legal_planos.sql\")"
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/M S I/Documents/UDESTRO/migrations/20260703_02_legal_planos.sql\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT * FROM cato WHERE id_cato = 2050394021;\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT * FROM cato ORDER BY id_cato LIMIT 6;\")",
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT version\\(\\);\")",
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"SELECT COUNT\\(*\\) total, COUNT\\(DISTINCT id_cato\\) distintos FROM cato;\")",
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"\\\\dt\")",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -c '\\\\d sindicatos')",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -c '\\\\d federaciones')",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -v ON_ERROR_STOP=1)",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -c '\\\\d cato')",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -c 'SELECT tc.table_name, tc.constraint_type, kcu.column_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name=kcu.constraint_name WHERE tc.table_name IN \\('\\\\''cato'\\\\'','\\\\''sindicatos'\\\\'','\\\\''centrales'\\\\'','\\\\''federaciones'\\\\''\\) AND tc.constraint_type IN \\('\\\\''PRIMARY KEY'\\\\'','\\\\''UNIQUE'\\\\''\\) ORDER BY tc.table_name, tc.constraint_type;')",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -t -c ' *)",
+      "Bash('C:/Program Files/PostgreSQL/18/bin/psql.exe' -U postgres -d bdudestro -t -c 'SELECT COUNT\\(*\\) FROM cambio c WHERE NOT EXISTS \\(SELECT 1 FROM cato x WHERE x.id_cato=c.id_cato\\) AND c.id_cato IS NOT NULL;')",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -c \"ALTER TABLE afiliados ALTER COLUMN estado TYPE varchar\\(30\\);\")",
+      "Bash(\"./venv/Scripts/python.exe\" \"/c/Users/MSI~1/AppData/Local/Temp/claude/C--Users-M-S-I-Documents-UDESTRO/9a526ef6-d7fc-42f7-aea1-677aac0d6ed8/scratchpad/check_varchar.py\")",
+      "Bash(sed -E 's/^\\([a-z_0-9]+\\)\\\\.\\([a-z_0-9]+\\): real=[0-9]+ esperado_modelo=\\([0-9]+\\)$/ALTER TABLE \\\\1 ALTER COLUMN \\\\2 TYPE varchar\\(\\\\3\\);/')",
+      "Read(//c/Users/MSI~1/AppData/Local/Temp/claude/C--Users-M-S-I-Documents-UDESTRO/9a526ef6-d7fc-42f7-aea1-677aac0d6ed8/scratchpad/**)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -d bdudestro -v ON_ERROR_STOP=1 -f \"/c/Users/MSI~1/AppData/Local/Temp/claude/C--Users-M-S-I-Documents-UDESTRO/9a526ef6-d7fc-42f7-aea1-677aac0d6ed8/scratchpad/widen.sql\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\psql.exe\" -U postgres -d bdudestro -c \"SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name='renovacionprogramada0' ORDER BY ordinal_position;\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\psql.exe\" -U postgres -d bdudestro -f \"C:\\\\Users\\\\M S I\\\\Documents\\\\UDESTRO\\\\migrations\\\\20260705_01_renovaciones_campos_form_legacy.sql\")"
     ]
   }
 }

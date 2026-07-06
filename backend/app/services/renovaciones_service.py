@@ -7,7 +7,7 @@ legacy SQL Server sobre PostgreSQL/SQLAlchemy:
 - ProcRenovGetUltima         -> obtener_renovacion (detalle)
 - ProcRenovInsertRenovProg2  -> crear_renovacion
 - ProcRenovUpdate2 /
-  ProcRenovUpdateFechaVen    -> actualizar_vigencia
+  ProcRenovUpdateFechaVen    -> actualizar_renovacion
 - ProcRenovUpdateDatosInfTec -> registrar_informe (sincroniza tecnico_info_*)
 - ProcRenovExisteDocuNro     -> validacion de hoja de ruta duplicada
 - ProcGetUltimoControl       -> snapshot de la parcela actual al crear
@@ -225,6 +225,7 @@ def crear_renovacion(data, usuario):
         vigencia_inicio=vigencia_inicio,
         fecha_vencimiento=fecha_vencimiento,
         observacion=limpiar(data.get('observacion')),
+        cato_fecha_control=ultimo.fecha_control if ultimo else None,
         cato_sup=ultimo.sup_mensura if ultimo else None,
         cato_utm_xy=ultimo.coordenadas if ultimo else None,
         cato_frec=ultimo.frecuencia if ultimo else None,
@@ -240,8 +241,40 @@ def crear_renovacion(data, usuario):
     return renov.to_dict()
 
 
-def actualizar_vigencia(id_renovacion, data, usuario):
-    """ProcRenovUpdateFechaVen: actualiza las fechas de vigencia."""
+# Campos de RenovacionProgramada editables desde el area Renovaciones
+# (PUT /api/renovaciones/<id>). Cubren el formulario legacy "INFORME
+# TECNICO AGRIMENSOR"; los campos del area Legal (legal_info_*, resol_*,
+# resultado, estado) NO se editan aca: los gestiona legal_service con su
+# propio workflow.
+_UPD_FECHAS = ('vigencia_inicio', 'fecha_vencimiento', 'hruta_fecha',
+               'cato_fecha_control', 'tecnico_info_fecha',
+               'tecnico_val_fecha')
+# campo de texto -> largo maximo de la columna (None = TEXT sin limite)
+_UPD_TEXTOS = {
+    'cato_utm_xy': 250, 'cato_edad_anio': 150, 'cato_edad_mes': 150,
+    'renov_utm_xy': 250, 'coordenadas': None, 'lote_nro': 10,
+    'tecnico': 50, 'tecnico_cargo': 50, 'tecnico_info_nro': 20,
+    'tecnico_info_obs': None, 'observacion': None,
+}
+_UPD_ENTEROS = ('cato_frec', 'renov_frec', 'renov_edad_mes',
+                'renov_edad_anio', 'edad_mes_nuevo', 'frecuencia',
+                'lote_sup', 'ant_valoracion')
+_UPD_DECIMALES = ('cato_sup', 'renov_sup', 'superficie')
+_UPD_ESPECIALES = ('nro_solicitud', 'tecnico_info_causal_inciso',
+                   'con_resolucion')
+
+CAMPOS_ACTUALIZABLES = (set(_UPD_FECHAS) | set(_UPD_TEXTOS)
+                        | set(_UPD_ENTEROS) | set(_UPD_DECIMALES)
+                        | set(_UPD_ESPECIALES))
+
+
+def actualizar_renovacion(id_renovacion, data, usuario):
+    """ProcRenovUpdate2 / ProcRenovUpdateFechaVen: actualiza los datos del
+    tramite (vigencia + campos del formulario legacy del agrimensor).
+
+    Solo toca los campos presentes en el payload; enviar '' o null limpia
+    el campo. Los campos del area Legal se gestionan en legal_service.
+    """
     renov = RenovacionProgramada.query.get(id_renovacion)
     if renov is None:
         raise ValidationError(f'No existe la renovacion {id_renovacion}')
@@ -250,34 +283,73 @@ def actualizar_vigencia(id_renovacion, data, usuario):
             f'La renovacion {id_renovacion} esta {renov.estado}; '
             'solo se modifican renovaciones en curso')
 
+    if not CAMPOS_ACTUALIZABLES.intersection(data):
+        raise ValidationError(
+            'Debe enviar al menos un campo a actualizar '
+            '(vigencia_inicio, fecha_vencimiento, observacion, ...)')
+
     errores = []
-    vigencia_inicio = parsear_fecha(data.get('vigencia_inicio'),
-                                    'vigencia_inicio', errores)
-    fecha_vencimiento = parsear_fecha(data.get('fecha_vencimiento'),
-                                      'fecha_vencimiento', errores)
+    valores = {}
+    for campo in _UPD_FECHAS:
+        if campo in data:
+            valores[campo] = parsear_fecha(data.get(campo), campo, errores)
+    for campo, maximo in _UPD_TEXTOS.items():
+        if campo in data:
+            texto = limpiar(data.get(campo))
+            if texto and maximo and len(texto) > maximo:
+                errores.append(f'{campo} supera los {maximo} caracteres')
+            else:
+                valores[campo] = texto
+    for campo in _UPD_ENTEROS:
+        if campo in data:
+            valores[campo] = parsear_entero(data.get(campo), campo, errores,
+                                            minimo=0)
+    for campo in _UPD_DECIMALES:
+        if campo in data:
+            valores[campo] = parsear_decimal(data.get(campo), campo, errores,
+                                             minimo=0, maximo=9999)
+    if 'tecnico_info_causal_inciso' in data:
+        valores['tecnico_info_causal_inciso'] = validar_en_lista(
+            data.get('tecnico_info_causal_inciso'),
+            'tecnico_info_causal_inciso', CAUSALES_INCISO, errores)
+    if 'con_resolucion' in data:
+        con_resol = data.get('con_resolucion')
+        if con_resol is None or isinstance(con_resol, bool):
+            valores['con_resolucion'] = con_resol
+        else:
+            errores.append('con_resolucion debe ser booleano (true/false)')
+    if 'nro_solicitud' in data:
+        nro_solicitud = limpiar(data.get('nro_solicitud'))
+        if not nro_solicitud:
+            errores.append(
+                'nro_solicitud (hoja de ruta) no puede quedar vacio')
+        elif nro_solicitud != renov.nro_solicitud \
+                and RenovacionProgramada.query\
+                .filter_by(nro_solicitud=nro_solicitud)\
+                .filter(RenovacionProgramada.id != renov.id).count() > 0:
+            errores.append(
+                f'Ya existe una renovacion con hoja de ruta {nro_solicitud}')
+        else:
+            valores['nro_solicitud'] = nro_solicitud
     if errores:
         raise ValidationError(errores)
-    if vigencia_inicio is None and fecha_vencimiento is None \
-            and 'observacion' not in data:
-        raise ValidationError(
-            'Debe enviar vigencia_inicio y/o fecha_vencimiento')
 
-    if vigencia_inicio is not None:
-        renov.vigencia_inicio = vigencia_inicio
-    if fecha_vencimiento is not None:
-        renov.fecha_vencimiento = fecha_vencimiento
+    for campo, valor in valores.items():
+        setattr(renov, campo, valor)
     if renov.vigencia_inicio and renov.fecha_vencimiento \
             and renov.fecha_vencimiento < renov.vigencia_inicio:
         db.session.rollback()
         raise ValidationError(
             'fecha_vencimiento no puede ser anterior a vigencia_inicio')
 
-    if 'observacion' in data:
-        renov.observacion = limpiar(data.get('observacion'))
     renov.usuario_ci = str(usuario.id_usr)[:20]
     renov.usuario_nombre = (usuario.nombre_apellido or '')[:50]
     db.session.commit()
     return renov.to_dict()
+
+
+# Alias legacy: la ruta PUT nacio actualizando solo la vigencia
+actualizar_vigencia = actualizar_renovacion
 
 
 def remitir_legal(id_renovacion, data, usuario):

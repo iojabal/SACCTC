@@ -308,16 +308,16 @@ export default function RegMensuraDetail() {
         <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Control Actual</Typography>
           <Grid container spacing={2}>
-            <Dato etiqueta="Hora de No Salida">{textoODefecto(renov.renovacion.hora_no_salida)}</Dato>
+            <Dato etiqueta="H.R. Nro. Sol.">{textoODefecto(renov.renovacion.nro_solicitud)}</Dato>
             <Dato etiqueta="Fecha Solicitud">
-              {renov.renovacion.fecha_solicitud ? formatearFecha(renov.renovacion.fecha_solicitud) : '-'}
+              {renov.renovacion.hruta_fecha ? formatearFecha(renov.renovacion.hruta_fecha) : '-'}
             </Dato>
             <Dato etiqueta="Fecha Verificación">
-              {renov.renovacion.fecha_verificacion ? formatearFecha(renov.renovacion.fecha_verificacion) : '-'}
+              {renov.renovacion.tecnico_val_fecha ? formatearFecha(renov.renovacion.tecnico_val_fecha) : '-'}
             </Dato>
-            <Dato etiqueta="Nro Hoja Técnica">{textoODefecto(renov.renovacion.nro_hoja_tecnica)}</Dato>
+            <Dato etiqueta="Nro Informe Técnico">{textoODefecto(renov.renovacion.tecnico_info_nro)}</Dato>
             <Dato etiqueta="Fecha Informe Técnico">
-              {renov.renovacion.fecha_informe_tecnico ? formatearFecha(renov.renovacion.fecha_informe_tecnico) : '-'}
+              {renov.renovacion.tecnico_info_fecha ? formatearFecha(renov.renovacion.tecnico_info_fecha) : '-'}
             </Dato>
             <Dato etiqueta="Resultado">{textoODefecto(renov.renovacion.resultado)}</Dato>
           </Grid>
